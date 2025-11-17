@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include("partials/head.ejs")%>
+    <title>Sign Up</title>
+</head>
+<body class="text-center">
+    <h1> The Sound of Paintings</h1>
+
+    <div id="logInBox">
+    <form action="/signIn">
+        <h2>Log In</h2>
+        <label>Email: <br><input type="text" id="emailInput" name="email"></label>
+        <br>
+        <label>Password: <br><input type="text" id="passwordInput" name="password"></label><br><br>
+        <button class="btn btn-outline-dark">Log In</button>
+        <div id="feedback"></div>
+        <h3 id="noAccount"> Don't have an account?
+        <a id="link" href="signup.mjs"> Sign Up</a>
+        </h3>
+        <br>
+    </form>
+    </div>
+
+    <%- include("partials/footer.ejs")%>
+</body>
+</html>
