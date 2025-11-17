@@ -21,6 +21,9 @@ const pool = mysql.createPool({
 });
 
 //routes
+app.get('/', async (req, res) => {     
+    res.render('home.ejs');
+ });
 
 
 
