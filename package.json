@@ -2,6 +2,7 @@
   "name": "soundofpaintings",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "index.mjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -18,6 +19,7 @@
   },
   "homepage": "https://github.com/rene777reyes/SoundOfPaintings#readme",
   "dependencies": {
+    "axios": "^1.13.2",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
     "mysql2": "^3.15.3",

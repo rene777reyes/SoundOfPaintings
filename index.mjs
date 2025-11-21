@@ -1,5 +1,6 @@
 import express from 'express';
 import mysql from 'mysql2/promise';
+import axios from 'axios';
 
 const app = express();
 
@@ -19,6 +20,34 @@ const pool = mysql.createPool({
     connectionLimit: 10,
     waitForConnections: true
 });
+
+//Paintings API is working 
+const printOpenAccessResults = (keyword, skip, limit) => {
+    const url = "https://openaccess-api.clevelandart.org/api/artworks"
+    const params = {
+            q: keyword,
+            skip: skip,
+            limit: limit,
+            has_image: 1
+        };
+
+    const resp = axios(url, {params})
+        .then((resp) => {
+            for (const artwork of resp.data.data) {
+                const tombstone = artwork.tombstone;
+                const image = artwork.images.web.url;
+
+                console.log(`${tombstone}\n${image}\n---`);
+            }
+        })
+        .catch((e) => {
+            console.log("ERROR getting artwork data");
+            console.log(e);
+        });
+}
+
+printOpenAccessResults("death", 0, 10);
+
 
 //routes
 app.get('/', async (req, res) => {     
