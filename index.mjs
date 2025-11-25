@@ -11,12 +11,11 @@ app.use(express.static('public'));
 app.use(express.urlencoded({extended:true}));
 
 //setting up database connection pool
-// Currently using Rene's database. We should change it
 const pool = mysql.createPool({
-    host: "q68u8b2buodpme2n.cbetxkdyhwsb.us-east-1.rds.amazonaws.com",
-    user: "xl4jx4dujap92wk3",
-    password: "p9wkm8o141l7i9z0",
-    database: "q7umu6ct1r9qcxua",
+    host: "qn66usrj1lwdk1cc.cbetxkdyhwsb.us-east-1.rds.amazonaws.com",
+    user: "wio9z639w46xw6q8",
+    password: "kxmxh2ebd9qx2b30",
+    database: "f3orc0h59yrjbdbz",
     connectionLimit: 10,
     waitForConnections: true
 });
