@@ -1,6 +1,7 @@
 import express from 'express';
 import mysql from 'mysql2/promise';
 import axios from 'axios';
+import fetch from 'node-fetch';
 
 const app = express();
 
@@ -47,6 +48,31 @@ const printOpenAccessResults = (keyword, skip, limit) => {
 
 printOpenAccessResults("death", 0, 10);
 
+// Song API is working
+async function getSongsByMood(tag) {
+    let response = await fetch(
+        `http://ws.audioscrobbler.com/2.0/?method=tag.gettoptracks&tag=${tag}&api_key=c434b6e9cd97b1fbadb8f6b9b3e964e3&format=json`
+    );
+    let data = await response.json();
+    return data.tracks?.track || [];
+}
+
+// Route for testing /songs/:mood
+// Example: "http://localhost:3000/songs/love"
+app.get('/songs/:mood', async (req, res) => {
+    let mood = req.params.mood;
+
+    let songs = await getSongsByMood(mood);
+
+    // lists first 5 results
+    let output = `<h2>Top Songs for Mood: ${mood}</h2><ul>`;
+    for (let song of songs.slice(0, 5)) {
+        output += `<li>${song.name} by ${song.artist.name}</li>`;
+    }
+    output += `</ul>`;
+
+    res.send(output);
+});
 
 //routes
 app.get('/', async (req, res) => {     
