@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artworks</title>
+</head>
+
+<body>
+    <h1>Browse Artworks</h1>
+
+    <% artworks.forEach(art=> { %>
+        <br><img src="<%= art.imageUrl %>" alt="<%= art.title %>" width="200" />
+        
+        <h2><%= art.title %> by <%= art.artist %></h2>
+
+        <a href="/artwork/<%= art.artworkId %>">View Mood and Songs</a>
+
+        <hr>
+    <% }) %>
+</body>
+
+</html>
