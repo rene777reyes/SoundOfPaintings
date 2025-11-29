@@ -65,13 +65,32 @@ app.get('/songs/:mood', async (req, res) => {
     let songs = await getSongsByMood(mood);
 
     // lists first 5 results
-    let output = `<h2>Top Songs for Mood: ${mood}</h2><ul>`;
+    let output = `<h2>Top Songs for Mood: ${mood}</h2>`;
     for (let song of songs.slice(0, 5)) {
-        output += `<li>${song.name} by ${song.artist.name}</li>`;
+        output += `${song.name} by ${song.artist.name}<br>`;
     }
-    output += `</ul>`;
+    output;
 
     res.send(output);
+});
+
+// Display artworks from database
+app.get('/artworks', async (req, res) => {
+    let [rows] = await pool.execute('SELECT * FROM artworks');
+    res.render('artworks', { artworks: rows });
+});
+
+// Show selected artwork and songs from its mood
+app.get('/artwork/:id', async (req, res) => {
+    let [rows] = await pool.execute(
+        'SELECT * FROM artworks WHERE artworkId = ?', [req.params.id]
+    );
+    
+    let artwork = rows[0];
+    let mood = artwork.mood;
+
+    let songs = await getSongsByMood(mood);
+    res.render('artwork-details', { artwork, songs });
 });
 
 //routes
