@@ -1,23 +1,33 @@
+body {
+    background-color: rgb(176, 140, 102);
+}
+
+.title {
+    font-family: "Lucida Handwriting", cursive;
+    padding-top: 6px;
+}
 footer {
     text-align: center;
 }
 
-#logInBox {
+#welcome {
+    color: darkred
+}
+
+#userInput {
     background-color: blanchedalmond;
     border: 1px;
     padding: 20px;
-    width: 300px;
+    width: 600px;
     text-align: center;
     margin: 0 auto;
     border-radius: 30px;
 }
 
-#noAccount {
-    font-size: 13px;
+#painting {
+    width: 400px;
 }
 
-#link {
-    font-size: 13px;
-}
+
 
 
