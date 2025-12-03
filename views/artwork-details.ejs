@@ -2,12 +2,12 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%- include("partials/head.ejs") %>
     <title>Artwork Details</title>
 </head>
 
 <body>
+    <%- include("partials/nav.ejs")%>
     <h1><%= artwork.title %> by <%= artwork.artist %></h1>
 
     <img src="<%= artwork.imageUrl %>" width="400" />
@@ -21,6 +21,8 @@
     <% songs.slice(0, 5).forEach(function(song) { %>
         <pr><%= song.name %> by <%= song.artist.name %></pr><br>
     <% }); %>
+
+    <%- include("partials/footer.ejs")%>
 </body>
 
 </html>

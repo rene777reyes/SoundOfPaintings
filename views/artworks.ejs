@@ -2,12 +2,12 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%- include("partials/head.ejs")%>
     <title>Artworks</title>
 </head>
 
 <body>
+    <%- include("partials/nav.ejs")%>
     <h1>Browse Artworks</h1>
 
     <% artworks.forEach(art=> { %>
@@ -19,6 +19,8 @@
 
         <hr>
     <% }) %>
+
+    <%- include("partials/footer.ejs")%>
 </body>
 
 </html>

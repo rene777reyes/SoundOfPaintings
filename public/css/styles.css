@@ -1,5 +1,10 @@
+header{
+    text-align: center;
+    font-weight: bolder;
+}
 body {
     background-color: rgb(176, 140, 102);
+    text-align: center;
 }
 
 .title {
@@ -8,6 +13,17 @@ body {
 }
 footer {
     text-align: center;
+}
+
+#nav_bar{
+    list-style-type: none;
+    margin: 5px;
+    padding: 5px;
+    background-color: black;
+    width: auto;
+    height: fit-content;
+    display: flex;
+    justify-content: space-between;
 }
 
 #welcome {
