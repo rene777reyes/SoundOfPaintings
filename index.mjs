@@ -1,5 +1,7 @@
 import express from 'express';
 import mysql from 'mysql2/promise';
+import axios from 'axios';
+import fetch from 'node-fetch';
 
 const app = express();
 
@@ -10,14 +12,85 @@ app.use(express.static('public'));
 app.use(express.urlencoded({extended:true}));
 
 //setting up database connection pool
-// Currently using Rene's database. We should change it
 const pool = mysql.createPool({
-    host: "q68u8b2buodpme2n.cbetxkdyhwsb.us-east-1.rds.amazonaws.com",
-    user: "xl4jx4dujap92wk3",
-    password: "p9wkm8o141l7i9z0",
-    database: "q7umu6ct1r9qcxua",
+    host: "qn66usrj1lwdk1cc.cbetxkdyhwsb.us-east-1.rds.amazonaws.com",
+    user: "wio9z639w46xw6q8",
+    password: "kxmxh2ebd9qx2b30",
+    database: "f3orc0h59yrjbdbz",
     connectionLimit: 10,
     waitForConnections: true
+});
+
+//Paintings API is working 
+const printOpenAccessResults = (keyword, skip, limit) => {
+    const url = "https://openaccess-api.clevelandart.org/api/artworks"
+    const params = {
+            q: keyword,
+            skip: skip,
+            limit: limit,
+            has_image: 1
+        };
+
+    const resp = axios(url, {params})
+        .then((resp) => {
+            for (const artwork of resp.data.data) {
+                const tombstone = artwork.tombstone;
+                const image = artwork.images.web.url;
+
+                console.log(`${tombstone}\n${image}\n---`);
+            }
+        })
+        .catch((e) => {
+            console.log("ERROR getting artwork data");
+            console.log(e);
+        });
+}
+
+printOpenAccessResults("death", 0, 10);
+
+// Song API is working
+async function getSongsByMood(tag) {
+    let response = await fetch(
+        `http://ws.audioscrobbler.com/2.0/?method=tag.gettoptracks&tag=${tag}&api_key=c434b6e9cd97b1fbadb8f6b9b3e964e3&format=json`
+    );
+    let data = await response.json();
+    return data.tracks?.track || [];
+}
+
+// Route for testing /songs/:mood
+// Example: "http://localhost:3000/songs/love"
+app.get('/songs/:mood', async (req, res) => {
+    let mood = req.params.mood;
+
+    let songs = await getSongsByMood(mood);
+
+    // lists first 5 results
+    let output = `<h2>Top Songs for Mood: ${mood}</h2>`;
+    for (let song of songs.slice(0, 5)) {
+        output += `${song.name} by ${song.artist.name}<br>`;
+    }
+    output;
+
+    res.send(output);
+});
+
+// Display artworks from database
+app.get('/artworks', async (req, res) => {
+    let [rows] = await pool.execute('SELECT * FROM artworks');
+    res.render('artworks', { artworks: rows });
+});
+
+// Show selected artwork and songs from its mood
+app.get('/artwork/:id', async (req, res) => {
+    let [rows] = await pool.execute(
+        'SELECT * FROM artworks WHERE artworkId = ?', [req.params.id]
+    );
+    
+    let artwork = rows[0];
+    let mood = artwork.mood;
+
+    let songs = await getSongsByMood(mood);
+    res.render('artwork-details', { artwork, songs });
 });
 
 //routes
