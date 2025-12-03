@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include("partials/head.ejs")%>
+    <title>Artworks</title>
+</head>
+
+<body>
+    <h1>Browse Artworks</h1>
+
+    <nav><%- include("partials/nav.ejs") %></nav>
+
+    <div id="artwork">
+        <% artworks.forEach(art=> { %>
+            <br><img src="<%= art.imageUrl %>" alt="<%= art.title %>" width="200" />
+            
+            <h2><%= art.title %> by <%= art.artist %></h2>
+
+            <a href="/artwork/<%= art.artworkId %>">View Mood and Songs</a>
+
+            <hr>
+        <% }) %>
+    </div>
+
+    <%- include("partials/footer.ejs")%>
+</body>
+
+</html>

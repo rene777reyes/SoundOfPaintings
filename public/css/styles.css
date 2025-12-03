@@ -1,5 +1,25 @@
+header{
+    text-align: center;
+    font-weight: bolder;
+}
+
+body{
+    text-align: center;
+}
+
 footer {
     text-align: center;
+}
+
+#nav_bar{
+    list-style-type: none;
+    margin: 5px;
+    padding: 5px;
+    background-color: black;
+    width: auto;
+    height: fit-content;
+    display: flex;
+    justify-content: space-between;
 }
 
 #logInBox {

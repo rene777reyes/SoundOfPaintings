@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include("partials/head.ejs")%>
+    <title>Artwork Details</title>
+</head>
+
+<body>
+    <h1><%= artwork.title %> by <%= artwork.artist %></h1>
+
+    <nav><%- include("partials/nav.ejs") %></nav>
+
+    <img src="<%= artwork.imageUrl %>" width="400" />
+
+    <p>Mood: <%= artwork.mood %></p>
+
+    <p>Songs that match this mood:</p>
+
+    <hr>
+
+    <% songs.slice(0, 5).forEach(function(song) { %>
+        <pr><%= song.name %> by <%= song.artist.name %></pr><br>
+    <% }); %>
+
+    <%- include("partials/footer.ejs")%>
+</body>
+
+</html>
