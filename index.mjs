@@ -22,31 +22,39 @@ const pool = mysql.createPool({
 });
 
 //Paintings API is working 
-const printOpenAccessResults = (keyword, skip, limit) => {
-    const url = "https://openaccess-api.clevelandart.org/api/artworks"
+export const getArtworks = async (keyword, skip, limit) => {
+    const url = "https://openaccess-api.clevelandart.org/api/artworks";
     const params = {
-            q: keyword,
-            skip: skip,
-            limit: limit,
-            has_image: 1
-        };
+        q: keyword,
+        skip: skip,
+        limit: limit,
+        has_image: 1
+    };
 
-    const resp = axios(url, {params})
-        .then((resp) => {
-            for (const artwork of resp.data.data) {
-                const tombstone = artwork.tombstone;
-                const image = artwork.images.web.url;
+    try {
+        const resp = await axios(url, { params });
+        return resp.data.data;
+        /*
+        const images = {};
+        // Adds each image info to map
+        for (const artwork of resp.data.data) {
 
-                console.log(`${tombstone}\n${image}\n---`);
+            if (artwork.images?.web?.url) {
+                images["url"] = artwork.images.web.url;
             }
-        })
-        .catch((e) => {
-            console.log("ERROR getting artwork data");
-            console.log(e);
-        });
-}
-
-printOpenAccessResults("death", 0, 10);
+            if (artwork.description){
+                images["description"] = artwork.description;
+            }
+        }
+        return images; // returns map of image info
+        */
+    } catch (err) {
+        console.error("ERROR getting artwork data");
+        console.error(err);
+        return []; // return empty map if it fails
+    }
+};
+//getArtworks("death", 0, 10);
 
 // Song API is working
 async function getSongsByMood(tag) {
@@ -96,8 +104,16 @@ app.get('/artwork/:id', async (req, res) => {
 //routes
 app.get('/', async (req, res) => {     
     res.render('home.ejs');
- });
+});
 
+app.get('/search', async (req, res) => {
+    let mood = req.query.mood;
+    console.log(mood);
+    const artworksMatched = await getArtworks(mood, 0, 10);
+    //res.json(artworksMatched);
+    //console.log(artworksMatched);
+    res.render('results.ejs', {artworksMatched, mood});
+ });
 
 
 //dbTest

@@ -5,23 +5,19 @@
     <title>Sign Up</title>
 </head>
 <body class="text-center">
-   <header><h1> The Sound of Paintings </h1></header>
+    <%- include("partials/nav.ejs")%>
+    <h1 class="title"> The Sound of Paintings</h1>
 
-   <nav><%- include("partials/nav.ejs") %></nav>
-
-    <div id="logInBox">
-    <form action="/signIn">
-        <h2>Log In</h2>
-        <label>Email: <br><input type="text" id="emailInput" name="email"></label>
-        <br>
-        <label>Password: <br><input type="text" id="passwordInput" name="password"></label><br><br>
-        <button class="btn btn-outline-dark">Log In</button>
-        <div id="feedback"></div>
-        <h3 id="noAccount"> Don't have an account?
-        <a id="link" href="signup.ejs"> Sign Up</a>
-        </h3>
-        <br>
-    </form>
+    <div id="userInput">
+        <form action="/search" method="GET">
+            <h2 id="welcome">Welcome User</h2>
+            <h3> Immerse yourself in art both visually and audibly  </h3>
+        Enter your mood (one word): <br><input type="text" id="userMood" name="mood">
+            <br><br>
+            <button class="btn btn-outline-dark">Search</button>
+            <div id="feedback"></div>
+            <br>
+        </form>
     </div>
 
     <%- include("partials/footer.ejs")%>

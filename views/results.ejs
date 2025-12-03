@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include("partials/head.ejs")%>
+    <title>Results</title>
+</head>
+<body class="text-center">
+    <%- include("partials/nav.ejs")%>
+
+    <h1> Results for <%= mood %></h1>
+
+    <% for (i=0; i < artworksMatched.length; i++) { %>
+        <h3><%= artworksMatched[i].title %> </h3> 
+        by <%= artworksMatched[i].creators?.[0]?.description || "Unknown Artist" %><br>
+        <img id="painting" src="<%=artworksMatched[i].images.web.url%>" alt="painting"> <br>
+        <%- artworksMatched[i].description %>
+        <hr>
+    <% } %>
+    <%- include("partials/footer.ejs")%>
+    <hr>
+</body>
+</html>
