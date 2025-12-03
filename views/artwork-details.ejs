@@ -10,6 +10,8 @@
     <%- include("partials/nav.ejs")%>
     <h1><%= artwork.title %> by <%= artwork.artist %></h1>
 
+    <nav><%- include("partials/nav.ejs") %></nav>
+
     <img src="<%= artwork.imageUrl %>" width="400" />
 
     <p>Mood: <%= artwork.mood %></p>
