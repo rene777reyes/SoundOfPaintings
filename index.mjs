@@ -112,7 +112,18 @@ app.get('/search', async (req, res) => {
     const artworksMatched = await getArtworks(mood, 0, 10);
     //res.json(artworksMatched);
     //console.log(artworksMatched);
-    res.render('results.ejs', {artworksMatched, mood});
+
+    //song API
+    let songs = await getSongsByMood(mood);
+
+    // lists first 5 results
+    let output = "";
+    for (let song of songs.slice(0, 5)) {
+        output += `${song.name} by ${song.artist.name}<br>`;
+    }
+    output;
+
+    res.render('results.ejs', {artworksMatched, mood, output});
  });
 
 

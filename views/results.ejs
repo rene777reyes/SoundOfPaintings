@@ -9,6 +9,9 @@
 
     <h1> Results for <%= mood %></h1>
 
+    <hr><h4>SONGS </h4><hr><%- output %> <hr>
+    <h4> WORKS OF ART</h4><hr>
+
     <% for (i=0; i < artworksMatched.length; i++) { %>
         <h3><%= artworksMatched[i].title %> </h3> 
         by <%= artworksMatched[i].creators?.[0]?.description || "Unknown Artist" %><br>
