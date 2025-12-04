@@ -10,6 +10,11 @@
     <h1> Results for <%= mood %></h1>
 
     <hr><h4>SONGS </h4><hr><%- output %> <hr>
+    <p> Currently playing: <%= songInfo.trackName%> by <%= songInfo.artistName%> </p> 
+    <audio autoplay controls playsinline>
+        <source src="<%= songInfo.previewUrl %>"
+          type="audio/mp4">
+    </audio>
     <h4> WORKS OF ART</h4><hr>
 
     <% for (i=0; i < artworksMatched.length; i++) { %>

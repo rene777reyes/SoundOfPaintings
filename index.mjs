@@ -2,6 +2,7 @@ import express from 'express';
 import mysql from 'mysql2/promise';
 import axios from 'axios';
 import fetch from 'node-fetch';
+//import { getPlayableSongsByMood } from './public/js/script.js';
 
 const app = express();
 
@@ -65,6 +66,25 @@ async function getSongsByMood(tag) {
     return data.tracks?.track || [];
 }
 
+export async function getOnePlayableSong(trackName, artistName) {
+    const query = `${trackName} ${artistName}`;
+    const url = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&limit=1&media=music&entity=musicTrack`;
+
+    const raw = await fetch(url);
+    const text = await raw.text();
+
+    let data;
+    try {
+        data = JSON.parse(text);
+    } catch (err) {
+        console.error("iTunes returned non-JSON:", text);
+        return null;
+    }
+
+    return data.results?.[0] || null;
+}
+
+
 // Route for testing /songs/:mood
 // Example: "http://localhost:3000/songs/love"
 app.get('/songs/:mood', async (req, res) => {
@@ -109,13 +129,10 @@ app.get('/', async (req, res) => {
 app.get('/search', async (req, res) => {
     let mood = req.query.mood;
     console.log(mood);
+    //calling paintings API
     const artworksMatched = await getArtworks(mood, 0, 10);
-    //res.json(artworksMatched);
-    //console.log(artworksMatched);
-
-    //song API
+    //calling song API
     let songs = await getSongsByMood(mood);
-
     // lists first 5 results
     let output = "";
     for (let song of songs.slice(0, 5)) {
@@ -123,7 +140,13 @@ app.get('/search', async (req, res) => {
     }
     output;
 
-    res.render('results.ejs', {artworksMatched, mood, output});
+    //only going to play the first song because iTunes blocks spamming
+    let firstSong = songs[0];
+    let songInfo = await getOnePlayableSong(firstSong.name, firstSong.artist.name);
+
+    console.log(songInfo);
+
+    res.render('results.ejs', {artworksMatched, mood, output, songInfo});
  });
 
 
