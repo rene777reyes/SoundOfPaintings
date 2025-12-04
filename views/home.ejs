@@ -1,27 +1,139 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <%- include("partials/head.ejs")%>
-    <title>Sign Up</title>
+  <meta charset="UTF-8">
+  <title>The Sound Of Paintings | Home</title>
+  <link rel="stylesheet" href="/css/styles.css">
 </head>
-<body class="text-center">
-    <h1> The Sound of Paintings</h1>
 
-    <div id="logInBox">
-    <form action="/signIn">
-        <h2>Log In</h2>
-        <label>Email: <br><input type="text" id="emailInput" name="email"></label>
-        <br>
-        <label>Password: <br><input type="text" id="passwordInput" name="password"></label><br><br>
-        <button class="btn btn-outline-dark">Log In</button>
-        <div id="feedback"></div>
-        <h3 id="noAccount"> Don't have an account?
-        <a id="link" href="signup.mjs"> Sign Up</a>
-        </h3>
-        <br>
-    </form>
+<body class="home-body">
+  <% 
+    const safeUser = (typeof currentUser !== 'undefined') ? currentUser : null;
+    const safeFeeling = (typeof feeling !== 'undefined' && feeling) ? feeling : '';
+    const safeArtworks = (typeof artworks !== 'undefined' && artworks) ? artworks : [];
+    const safeSongs = (typeof songs !== 'undefined' && songs) ? songs : [];
+    const safeError = (typeof error !== 'undefined') ? error : null;
+  %>
+
+  <!-- Top navigation bar -->
+  <header class="top-bar">
+    <div class="top-bar-inner">
+      <div class="brand">
+        <span class="logo">The Sound Of Paintings</span>
+      </div>
+
+      <nav class="main-nav">
+        <a href="/home" class="nav-link active">Home</a>
+        <a href="/collections" class="nav-link">Collections</a>
+        <a href="/songs" class="nav-link">My Songs</a>
+      </nav>
+
+      <div class="user-area">
+        <% if (safeUser) { %>
+          <span class="user-name">Hi, <%= safeUser.username %></span>
+          <form method="POST" action="/logout" class="logout-form">
+            <button type="submit" class="btn-small">Log Out</button>
+          </form>
+        <% } %>
+      </div>
     </div>
+  </header>
 
-    <%- include("partials/footer.ejs")%>
+  <main class="home-main">
+    <section class="hero">
+      <h1 class="hero-title">What are you feeling?</h1>
+
+      <form method="GET" action="/home" class="mood-form">
+        <div class="mood-input-wrapper">
+          <input
+            type="text"
+            name="q"
+            placeholder="heartbreak, chaos, love..."
+            value="<%= safeFeeling %>"
+            class="mood-input"
+            required
+          >
+        </div>
+        <button type="submit" class="btn-primary hero-btn">
+          Find My Mood
+        </button>
+      </form>
+
+      <% if (safeError) { %>
+        <p class="error"><%= safeError %></p>
+      <% } %>
+    </section>
+
+    <!-- Paintings  -->
+    <% if (safeArtworks.length > 0) { %>
+      <section class="results">
+        <h2 class="results-title">Paintings that match "<%= safeFeeling %>"</h2>
+        <div class="gallery-grid">
+          <% safeArtworks.forEach(function(art) { %>
+            <article class="art-card">
+              <% if (art.image) { %>
+                <img
+                  src="<%= art.image %>"
+                  alt="<%= art.title %>"
+                  class="art-image"
+                >
+              <% } %>
+              <div class="art-meta">
+                <h3 class="art-title"><%= art.title %></h3>
+                <p class="art-artist"><%= art.artist %></p>
+              </div>
+            </article>
+          <% }) %>
+        </div>
+      </section>
+    <% } else if (safeFeeling) { %>
+      <section class="results">
+        <p class="no-results">
+          No artworks matched that feeling yet. Try another word!
+        </p>
+      </section>
+    <% } %>
+
+     <!-- Deezer songs -->
+    <% if (safeFeeling && safeSongs.length > 0) { %>
+      <section class="results">
+        <h2 class="results-title">Songs that sound like "<%= safeFeeling %>"</h2>
+        <ol class="songs-list">
+          <% safeSongs.slice(0, 10).forEach(function(song) { %>
+            <li class="song-item">
+              <form action="/songs/save" method="POST" style="display:inline;">
+                <input type="hidden" name="deezer_id" value="<%= song.id %>">
+                <input type="hidden" name="title" value="<%= song.title %>">
+                <input type="hidden" name="artist" value="<%= song.artist.name %>">
+                <input type="hidden" name="cover_img"
+                       value="<%= (song.album && (song.album.cover_big || song.album.cover_medium)) ? (song.album.cover_big || song.album.cover_medium) : '' %>">
+                <input type="hidden" name="preview_url"
+                       value="<%= song.preview || song.link || '' %>">
+
+                <button type="submit" class="btn-small">Save</button>
+              </form>
+
+              <% if (song.album && (song.album.cover_medium || song.album.cover_big)) { %>
+                <img
+                  src="<%= song.album.cover_medium || song.album.cover_big %>"
+                  alt="<%= song.title %>"
+                  class="song-cover-inline"
+                >
+              <% } %>
+
+              <strong><%= song.title %></strong>
+              <span> by <%= song.artist.name %></span>
+
+              <% if (song.preview) { %>
+                <audio controls src="<%= song.preview %>" class="song-audio"></audio>
+              <% } %>
+            </li>
+          <% }) %>
+        </ol>
+      </section>
+    <% } %>
+
+  </main>
 </body>
 </html>
+

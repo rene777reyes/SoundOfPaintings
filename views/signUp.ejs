@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>The Sound Of Paintings  Sign Up</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body class="auth-body">
+  <header class="top-bar">
+    <div class="top-bar-inner">
+      <h1 class="logo">The Sound Of Paintings</h1>
+    </div>
+  </header>
+
+  <main class="auth-container">
+    <section class="auth-card">
+      <h2>Create Account</h2>
+
+      <% if (error) { %>
+        <p class="error"><%= error %></p>
+      <% } %>
+
+      <form method="POST" action="/sign-up" class="auth-form">
+        <label>Username</label>
+        <input name="username" type="text" required>
+
+        <label>Email</label>
+        <input name="email" type="email" required>
+
+        <label>Password</label>
+        <input name="password" type="password" required>
+
+        <button type="submit" class="btn-primary">Sign Up</button>
+      </form>
+
+      <p class="switch-auth">
+        Already have an account? <a href="/sign-in">Sign in</a>
+      </p>
+    </section>
+  </main>
+</body>
+</html>

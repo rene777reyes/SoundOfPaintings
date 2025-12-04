@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>The Sound Of Paintings | Collections</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body class="home-body">
+  <header class="top-bar">
+    <div class="top-bar-inner">
+      <div class="brand">
+        <span class="logo">The Sound Of Paintings</span>
+      </div>
+
+      <nav class="main-nav">
+        <a href="/home" class="nav-link">Home</a>
+        <a href="/collections" class="nav-link active">Collections</a>
+        <a href="/songs" class="nav-link">My Songs</a>
+      </nav>
+
+      <div class="user-area">
+        <% if (currentUser) { %>
+          <span class="user-name">Hi, <%= currentUser.username %></span>
+          <form method="POST" action="/logout" class="logout-form">
+            <button type="submit" class="btn-small">Log Out</button>
+          </form>
+        <% } %>
+      </div>
+    </div>
+  </header>
+
+  <main class="home-main">
+    <section class="results">
+      <h2 class="results-title">Your Collections</h2>
+
+      <% if (error) { %>
+        <p class="error"><%= error %></p>
+      <% } %>
+
+      <form action="/collections" method="POST" class="mood-form" style="margin-bottom: 2rem;">
+        <div class="mood-input-wrapper">
+          <input
+            type="text"
+            name="name"
+            placeholder="New collection name"
+            class="mood-input"
+            required
+          >
+        </div>
+        <div class="mood-input-wrapper">
+          <input
+            type="text"
+            name="emotion"
+            placeholder="Emotion for this collection (optional)"
+            class="mood-input"
+          >
+        </div>
+        <button type="submit" class="btn-primary hero-btn">
+          Create Collection
+        </button>
+      </form>
+
+      <% if (!collections || collections.length === 0) { %>
+        <p>You haven’t created any collections yet.</p>
+      <% } else { %>
+        <ul class="collection-list">
+          <% collections.forEach(function(c) { %>
+            <li class="collection-item">
+              <strong><%= c.name %></strong>
+              <% if (c.emotion) { %>
+                <span> – <%= c.emotion %></span>
+              <% } %>
+            </li>
+          <% }) %>
+        </ul>
+      <% } %>
+    </section>
+  </main>
+</body>
+</html>

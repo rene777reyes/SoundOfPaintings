@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>The Sound Of Paintings | My Songs</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="home-body">
+  <header class="top-bar">
+    <div class="top-bar-inner">
+      <div class="brand">
+        <span class="logo">The Sound Of Paintings</span>
+      </div>
+      <nav class="main-nav">
+        <a href="/home" class="nav-link">Home</a>
+        <a href="/collections" class="nav-link">Collections</a>
+        <a href="/songs" class="nav-link active">My Songs</a>
+      </nav>
+      <div class="user-area">
+        <% if (currentUser) { %>
+          <span class="user-name">Hi, <%= currentUser.username %></span>
+          <form method="POST" action="/logout" class="logout-form">
+            <button type="submit" class="btn-small">Log Out</button>
+          </form>
+        <% } %>
+      </div>
+    </div>
+  </header>
+
+  <main class="home-main">
+    <section class="results">
+      <h2 class="results-title">Saved Songs</h2>
+
+      <% if (!songs || songs.length === 0) { %>
+        <p>You haven’t saved any songs yet.</p>
+      <% } else { %>
+        <ul class="songs-list">
+          <% songs.forEach(function(song) { %>
+            <li class="song-item">
+              <% if (song.cover_img) { %>
+                <img
+                  src="<%= song.cover_img %>"
+                  alt="<%= song.title %>"
+                  class="song-cover-inline"
+                >
+              <% } %>
+              <div>
+                <strong><%= song.title %></strong> by <%= song.artist %><br>
+                <% if (song.preview_url) { %>
+                  <audio controls src="<%= song.preview_url %>" class="song-audio"></audio>
+                  <br>
+                  <a href="<%= song.preview_url %>" target="_blank">Deezer</a>
+                <% } %>
+              </div>
+            </li>
+          <% }) %>
+        </ul>
+      <% } %>
+    </section>
+  </main>
+</body>
+</html>
