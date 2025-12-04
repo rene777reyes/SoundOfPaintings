@@ -1,10 +1,15 @@
 import express from 'express';
 import mysql from 'mysql2/promise';
 import axios from 'axios';
+import dotenv from 'dotenv';
+dotenv.config();
 import fetch from 'node-fetch';
+import session from 'express-session';
+import bcrypt from 'bcrypt';
 //import { getPlayableSongsByMood } from './public/js/script.js';
 
 const app = express();
+
 
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
@@ -12,6 +17,11 @@ app.use(express.static('public'));
 //for Express to get values using POST method
 app.use(express.urlencoded({extended:true}));
 
+app.use(session({
+    secret: process.env.SESSION_SECRET,  
+    resave: false,
+    saveUninitialized: false
+}));
 //setting up database connection pool
 const pool = mysql.createPool({
     host: "qn66usrj1lwdk1cc.cbetxkdyhwsb.us-east-1.rds.amazonaws.com",
@@ -21,6 +31,20 @@ const pool = mysql.createPool({
     connectionLimit: 10,
     waitForConnections: true
 });
+
+function isAuthenticated(req, res, next) {
+    if (req.session && req.session.userId) {
+        return next();
+    }
+    res.redirect('/login');
+}
+
+function isAdmin(req, res, next) {
+    if (req.session && req.session.role === 'admin') {
+        return next();
+    }
+    res.status(403).send('Forbidden: admins only');
+}
 
 //Paintings API is working 
 export const getArtworks = async (keyword, skip, limit) => {
@@ -122,9 +146,55 @@ app.get('/artwork/:id', async (req, res) => {
 });
 
 //routes
+
+//admin
+app.get('/admin', isAuthenticated, isAdmin, (req, res) => {
+    res.render('admin-dashboard', { username: req.session.username });
+});
+
+
+
 app.get('/', async (req, res) => {     
     res.render('home.ejs');
 });
+app.get('/artworks', isAuthenticated, async (req, res) => {
+    let [rows] = await pool.execute('SELECT * FROM artworks');
+    res.render('artworks', { artworks: rows, userEmail: req.session.email });
+});
+
+//signup route
+app.get('/signup', (req, res) => {
+    res.render('signup', { error: null });
+});
+
+app.post('/signup', async (req, res) => {
+    const { username, email, password } = req.body;
+
+    try {
+        const [existing] = await pool.execute(
+            'SELECT * FROM users WHERE username = ? OR email = ?',
+            [username, email]
+        );
+
+        if (existing.length > 0) {
+            return res.render('signup', { error: 'Username or email already exists' });
+        }
+
+        const hashed = await bcrypt.hash(password, 10);
+
+        await pool.execute(
+            'INSERT INTO users (email, passwordHash, role, username) VALUES (?, ?, ?, ?)',
+            [email, hashed, 'user', username]   // role = 'user'
+        );
+
+        res.redirect('/login');
+    } catch (err) {
+        console.error(err);
+        res.render('signup', { error: 'Something went wrong, please try again.' });
+    }
+});
+
+
 
 app.get('/search', async (req, res) => {
     let mood = req.query.mood;
@@ -148,6 +218,57 @@ app.get('/search', async (req, res) => {
 
     res.render('results.ejs', {artworksMatched, mood, output, songInfo});
  });
+
+ //Login route
+ app.get('/login', (req, res) => {
+    res.render('login', { error: null });
+});
+
+app.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        const [rows] = await pool.execute(
+            'SELECT * FROM users WHERE email = ?',
+            [email]
+        );
+
+        if (rows.length === 0) {
+            return res.render('login', { error: 'Invalid email or password' });
+        }
+
+        const user = rows[0];
+
+        const match = await bcrypt.compare(password, user.passwordHash);
+        if (!match) {
+            return res.render('login', { error: 'Invalid email or password' });
+        }
+
+        req.session.userId = user.userId;
+        req.session.email = user.email;
+        req.session.username = user.username;
+        req.session.role = user.role;
+        req.session.authenticated = true;
+
+        res.redirect('/');
+    } catch (err) {
+        console.error(err);
+        res.render('login', { error: 'Something went wrong, please try again.' });
+    }
+});
+
+
+
+app.get('/logout', (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            console.error(err);
+        }
+        res.redirect('/login');
+    });
+});
+
+
 
 
 //dbTest
