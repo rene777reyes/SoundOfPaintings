@@ -3,12 +3,46 @@
 <head>
     <%- include("partials/head.ejs")%>
     <title> Login </title>
+    <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-   <header><h1> Login </h1></header>
+   <header>
+    <h1 class="title">Login</h1>
+</header>
 
-   <nav><%- include("partials/nav.ejs") %></nav>
-    
-    <%- include("partials/footer.ejs")%>
+<nav>
+    <%- include("partials/nav.ejs") %>
+</nav>
+
+<main class="auth-container">
+
+    <% if (error) { %>
+        <div class="error-box"><%= error %></div>
+    <% } %>
+
+    <h2 class="auth-title">Login</h2>
+
+    <form action="/login" method="POST" class="auth-form">
+
+        <label class="auth-label" for="email">Email:</label>
+        <input type="email" id="email" name="email" class="auth-input" required>
+
+        <label class="auth-label" for="password">Password:</label>
+        <input type="password" id="password" name="password" class="auth-input" required>
+
+        <button type="submit" class="auth-button">Log In</button>
+
+    </form>
+
+    <p class="auth-alt">
+        Don’t have an account?
+        <a href="/signup">Sign up</a>
+    </p>
+
+</main>
+
+<footer>
+    <%- include("partials/footer.ejs") %>
+</footer>
 </body>
 </html>
