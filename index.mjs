@@ -8,20 +8,28 @@ import session from 'express-session';
 import bcrypt from 'bcrypt';
 //import { getPlayableSongsByMood } from './public/js/script.js';
 
-const app = express();
+//Middleware
 
+const app = express();
 
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
 
-//for Express to get values using POST method
-app.use(express.urlencoded({extended:true}));
+
+app.use(express.urlencoded({ extended: true }));
+
 
 app.use(session({
     secret: process.env.SESSION_SECRET,  
     resave: false,
     saveUninitialized: false
 }));
+
+app.use((req, res, next) => {
+    res.locals.session = req.session;
+    next();
+});
+
 //setting up database connection pool
 const pool = mysql.createPool({
     host: "qn66usrj1lwdk1cc.cbetxkdyhwsb.us-east-1.rds.amazonaws.com",
@@ -110,7 +118,6 @@ export async function getOnePlayableSong(trackName, artistName) {
 
 
 // Route for testing /songs/:mood
-// Example: "http://localhost:3000/songs/love"
 app.get('/songs/:mood', async (req, res) => {
     let mood = req.params.mood;
 
@@ -147,19 +154,70 @@ app.get('/artwork/:id', async (req, res) => {
 
 //routes
 
-//admin
-app.get('/admin', isAuthenticated, isAdmin, (req, res) => {
-    res.render('admin-dashboard', { username: req.session.username });
+//Admin page
+app.get('/admin', isAuthenticated, isAdmin, async (req, res) => {
+    const search = req.query.search || '';
+    const role = req.query.role || '';
+
+    let sql = 'SELECT userId, email, role, username FROM users';
+    let params = [];
+
+    if (search) {
+        sql += ' WHERE (email LIKE ? OR username LIKE ?)';
+        params.push('%' + search + '%', '%' + search + '%');
+    }
+
+    if (role === 'admin' || role === 'user') {
+        if (params.length > 0) {
+            sql += ' AND role = ?';
+        } else {
+            sql += ' WHERE role = ?';
+        }
+        params.push(role);
+    }
+
+    const [users] = await pool.execute(sql, params);
+
+    res.render('admin', {
+        username: req.session.username,
+        users
+    });
 });
 
-
-
-app.get('/', async (req, res) => {     
-    res.render('home.ejs');
+// only logged in users can go into the favorites tab
+app.get('/favorites', isAuthenticated, async (req, res) => {
+    res.render('favorites', { username: req.session.username /*, favorites: rows */ });
 });
+
+// Home only for logged in users
+app.get('/', isAuthenticated, (req, res) => {     
+    res.render('home', { username: req.session.username });
+});
+
 app.get('/artworks', isAuthenticated, async (req, res) => {
     let [rows] = await pool.execute('SELECT * FROM artworks');
     res.render('artworks', { artworks: rows, userEmail: req.session.email });
+});
+
+//  delete user
+app.post('/admin/users/:id/delete', isAuthenticated, isAdmin, async (req, res) => {
+    const userId = req.params.id;
+    await pool.execute('DELETE FROM users WHERE userId = ?', [userId]);
+    res.redirect('/admin');
+});
+
+//  make user admin 
+app.post('/admin/makeadmin', isAuthenticated, isAdmin, async (req, res) => {
+
+    const userId = req.body.userId;
+    await pool.execute('UPDATE users SET role = "admin" WHERE userId = ?', [userId]);
+    res.redirect('/admin');
+});
+
+app.post('/admin/removeadmin', isAuthenticated, isAdmin, async (req, res) => {
+    const userId = req.body.userId;
+    await pool.execute('UPDATE users SET role = "user" WHERE userId = ?', [userId]);
+    res.redirect('/admin');
 });
 
 //signup route
@@ -184,7 +242,7 @@ app.post('/signup', async (req, res) => {
 
         await pool.execute(
             'INSERT INTO users (email, passwordHash, role, username) VALUES (?, ?, ?, ?)',
-            [email, hashed, 'user', username]   // role = 'user'
+            [email, hashed, 'user', username]   // role 
         );
 
         res.redirect('/login');
@@ -194,15 +252,16 @@ app.post('/signup', async (req, res) => {
     }
 });
 
-
-
 app.get('/search', async (req, res) => {
     let mood = req.query.mood;
     console.log(mood);
+
     //calling paintings API
     const artworksMatched = await getArtworks(mood, 0, 10);
+
     //calling song API
     let songs = await getSongsByMood(mood);
+
     // lists first 5 results
     let output = "";
     for (let song of songs.slice(0, 5)) {
@@ -227,37 +286,36 @@ app.get('/search', async (req, res) => {
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
-    try {
-        const [rows] = await pool.execute(
-            'SELECT * FROM users WHERE email = ?',
-            [email]
-        );
-
-        if (rows.length === 0) {
-            return res.render('login', { error: 'Invalid email or password' });
-        }
-
-        const user = rows[0];
-
-        const match = await bcrypt.compare(password, user.passwordHash);
-        if (!match) {
-            return res.render('login', { error: 'Invalid email or password' });
-        }
-
-        req.session.userId = user.userId;
-        req.session.email = user.email;
-        req.session.username = user.username;
-        req.session.role = user.role;
-        req.session.authenticated = true;
-
-        res.redirect('/');
-    } catch (err) {
-        console.error(err);
-        res.render('login', { error: 'Something went wrong, please try again.' });
+    // Get user by email
+    const [rows] = await pool.execute(
+        'SELECT * FROM users WHERE email = ?',
+        [email]
+    );
+    // No user found
+    if (rows.length === 0) {
+        return res.render('login', { error: 'Invalid email or password' });
     }
+    const user = rows[0];
+
+    // Compare password
+    const match = await bcrypt.compare(password, user.passwordHash);
+    if (!match) {
+        return res.render('login', { error: 'Invalid email or password' });
+    }
+
+    // Save session info
+    req.session.userId = user.userId;
+    req.session.email = user.email;
+    req.session.username = user.username;
+    req.session.role = user.role;
+
+    //  admin vs user
+    if (user.role === 'admin') {
+        return res.redirect('/admin');
+    }
+
+    return res.redirect('/');
 });
-
-
 
 app.get('/logout', (req, res) => {
     req.session.destroy(err => {
@@ -267,10 +325,6 @@ app.get('/logout', (req, res) => {
         res.redirect('/login');
     });
 });
-
-
-
-
 //dbTest
 app.get("/dbTest", async(req, res) => {
     try {
