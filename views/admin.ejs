@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+</head>
+<body>
+<nav>
+    <% if (session && session.userId) { %>
+
+        <a href="/">Home</a>
+        <a href="/favorites">Favorites</a>
+
+        <% if (session.role === 'admin')
+         { %>
+            <a href="/admin">Admin</a>
+        <% } %>
+
+        <a href="/logout">Logout</a>
+
+    <% } else 
+    { %>
+        <a href="/login">Login</a>
+        <a href="/signup">Sign Up</a>
+    <% } %>
+</nav>
+
+<h1>Admin Dashboard</h1>
+
+<p>Welcome, <%= username %>!</p>
+
+<h2>Search Users</h2>
+
+<form action="/admin" method="GET">
+
+    <input type="text" name="search" placeholder="Search by email or username">
+
+    <select name="role">
+        <option value="">All</option>
+        <option value="user">Users</option>
+        <option value="admin">Admins</option>
+    </select>
+    <button type="submit">Search</button>
+
+</form>
+
+<h2>Current Users</h2>
+
+<% users.forEach(user => { %>
+    <div>
+        <p>ID: <%= user.userId %></p>
+        <p>Email: <%= user.email %></p>
+        <p>Username: <%= user.username %></p>
+        <p>Role: <%= user.role %></p>
+
+        <% if (session && user.userId !== session.userId) { %>
+
+            <form action="/admin/users/<%= user.userId %>/delete" method="POST"
+                  onsubmit="return confirm('Delete this user?');">
+                <button type="submit">Delete User</button>
+            </form>
+
+            <% if (user.role !== 'admin') 
+            { %>
+                <form action="/admin/makeadmin" method="POST"
+                      onsubmit="return confirm('Make this user an admin?');">
+
+                    <input type="hidden" name="userId" value="<%= user.userId %>">
+                    <button type="submit">Make Admin</button>
+                </form>
+            <% } else { %>
+                <form action="/admin/removeadmin" method="POST"
+
+                      onsubmit="return confirm('Remove this user as admin?');">
+                    <input type="hidden" name="userId" value="<%= user.userId %>">
+                    <button type="submit">Remove Admin</button>
+                </form>
+            <% } %>
+
+        <% } else { %>
+            <p>(You)</p>
+        <% } %>
+
+    </div>
+    <hr>
+<% }) %>
+
+</body>
+</html>
+
+
+
+

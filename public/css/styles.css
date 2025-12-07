@@ -2,11 +2,15 @@ header{
     text-align: center;
     font-weight: bolder;
 }
-
-body{
+body {
+    background-color: rgb(176, 140, 102);
     text-align: center;
 }
 
+.title {
+    font-family: "Lucida Handwriting", cursive;
+    padding-top: 6px;
+}
 footer {
     text-align: center;
 }
@@ -22,22 +26,93 @@ footer {
     justify-content: space-between;
 }
 
-#logInBox {
+#welcome {
+    color: darkred
+}
+
+#userInput {
     background-color: blanchedalmond;
     border: 1px;
     padding: 20px;
-    width: 300px;
+    width: 600px;
     text-align: center;
     margin: 0 auto;
     border-radius: 30px;
 }
 
-#noAccount {
-    font-size: 13px;
+#painting {
+    width: 400px;
 }
 
-#link {
-    font-size: 13px;
+.auth-container {
+    background-color: blanchedalmond;
+    width: 400px;
+    margin: 40px auto;
+    padding: 25px;
+    border-radius: 30px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    text-align: center;
 }
 
+.auth-title {
+    font-family: "Lucida Handwriting", cursive;
+    font-size: 28px;
+    color: darkred;
+    margin-bottom: 20px;
+}
 
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    text-align: left;
+    font-family: Arial, sans-serif;
+}
+
+.auth-label {
+    font-weight: bold;
+    color: black;
+}
+
+.auth-input {
+    padding: 10px;
+    border: 2px solid black;
+    border-radius: 10px;
+    font-size: 1rem;
+    background-color: white;
+}
+
+.auth-button {
+    padding: 12px;
+    background-color: black;
+    color: white;
+    font-size: 1rem;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+}
+
+.auth-button:hover {
+    background-color: darkred;
+}
+
+.auth-alt {
+    margin-top: 15px;
+    font-family: Arial, sans-serif;
+}
+
+.auth-alt a {
+    color: black;
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+.error-box {
+    background-color: #ffcccc;
+    border: 2px solid darkred;
+    padding: 10px;
+    color: darkred;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    font-weight: bold;
+}
