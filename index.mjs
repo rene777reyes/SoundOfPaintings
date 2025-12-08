@@ -15,9 +15,10 @@ const app = express();
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
 
-
+//for AJAX json 
+app.use(express.json());
+// for normal forms
 app.use(express.urlencoded({ extended: true }));
-
 
 app.use(session({
     secret: process.env.SESSION_SECRET,  
@@ -152,6 +153,20 @@ app.get('/artwork/:id', async (req, res) => {
     res.render('artwork-details', { artwork, songs });
 });
 
+
+app.post("/addToFavs", async (req, res) => {
+    const artist = req.body.artist || "Unknown Artist";
+    const title = req.body.title;
+    const image_url = req.body.image_url;
+
+    let sql = `INSERT INTO favorites
+                (artist, title, image_url)
+                VALUES (?, ?, ?)`;
+    let sqlParams = [artist, title, image_url];
+    const[rows] = await pool.query(sql, sqlParams);
+    res.json({status: "ok"})
+});
+
 //routes
 
 //Admin page
@@ -255,22 +270,33 @@ app.post('/signup', async (req, res) => {
 app.get('/search', async (req, res) => {
     let mood = req.query.mood;
     console.log(mood);
-
+    if (mood.includes(' ')){
+        return res.render('home.ejs');
+    }
     //calling paintings API
     const artworksMatched = await getArtworks(mood, 0, 10);
+    if (artworksMatched == null){
+        return res.render('home.ejs');
+    }
 
     //calling song API
     let songs = await getSongsByMood(mood);
+    if (songs == null){
+        return res.render('home.ejs');
+    }
 
     // lists first 5 results
     let output = "";
     for (let song of songs.slice(0, 5)) {
+        if (!song || !song.name || !song.artist || !song.artist.name) continue;
         output += `${song.name} by ${song.artist.name}<br>`;
     }
-    output;
 
     //only going to play the first song because iTunes blocks spamming
     let firstSong = songs[0];
+    if (!firstSong?.name || !firstSong.artist?.name){
+        return res.render('home.ejs');
+    }
     let songInfo = await getOnePlayableSong(firstSong.name, firstSong.artist.name);
 
     console.log(songInfo);
