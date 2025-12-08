@@ -157,7 +157,7 @@ app.get('/artwork/:id', async (req, res) => {
     res.render('artwork-details', { artwork, songs });
 });
 
-
+//add an artwork to favorites of user
 app.post("/addToFavs", async (req, res) => {
     const artist = req.body.artist || "Unknown Artist";
     const title = req.body.title;
@@ -205,15 +205,26 @@ app.get('/admin', isAuthenticated, isAdmin, async (req, res) => {
 
 // only logged in users can go into the favorites tab
 app.get('/favorites', isAuthenticated, async (req, res) => {
-    res.render('favorites', { username: req.session.username /*, favorites: rows */ });
+
+    const userId = req.params.id;
+
+    let sql = `SELECT artist, title, image_url, moods
+                FROM artists
+                NATURAL JOIN favorites 
+                WHERE userId = ?`
+
+    let sqlParams = userId;
+    const[favs] = await pool.execute(sql, sqlParams);
+    res.render('favorites', { username: req.session.username , favorites: favs });
 });
+
 
 // Home only for logged in users
 app.get('/', isAuthenticated, (req, res) => {     
     res.render('home', { username: req.session.username });
 });
 
-//Allows anyone to acces all of the artists to view the basic functionality/usage of the site
+//Allows anyone to access and view all of the artists to observe the basic functionality/usage of the site
 app.get('/artworks', async (req, res) => {
     let [rows] = await pool.execute('SELECT * FROM artworks');
     res.render('artworks', { artworks: rows, userEmail: req.session.email });
