@@ -19,7 +19,7 @@ app.use(express.static('public'));
 
 app.use(express.urlencoded({ extended: true }));
 
-
+//Creates a session variable to track if someone is logged in or not
 app.use(session({
     secret: process.env.SESSION_SECRET,  
     resave: false,
@@ -41,6 +41,7 @@ const pool = mysql.createPool({
     waitForConnections: true
 });
 
+//Checks if the user is logged in, redirects them to the login page if not
 function isAuthenticated(req, res, next) {
     if (req.session && req.session.userId) {
         return next();
@@ -48,6 +49,7 @@ function isAuthenticated(req, res, next) {
     res.redirect('/login');
 }
 
+//Checks if the logged in user is and admin, prevents certain actions if false
 function isAdmin(req, res, next) {
     if (req.session && req.session.role === 'admin') {
         return next();
@@ -195,7 +197,8 @@ app.get('/', isAuthenticated, (req, res) => {
     res.render('home', { username: req.session.username });
 });
 
-app.get('/artworks', isAuthenticated, async (req, res) => {
+//Allows anyone to acces all of the artists to view the basic functionality/usage of the site
+app.get('/artworks', async (req, res) => {
     let [rows] = await pool.execute('SELECT * FROM artworks');
     res.render('artworks', { artworks: rows, userEmail: req.session.email });
 });

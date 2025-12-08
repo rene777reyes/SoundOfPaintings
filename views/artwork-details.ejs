@@ -7,8 +7,7 @@
 </head>
 
 <body>
-    <%- include("partials/nav.ejs")%>
-    <h1><%= artwork.title %> by <%= artwork.artist %></h1>
+    <header><h1><%= artwork.title %> by <%= artwork.artist %></h1></header>
 
     <nav><%- include("partials/nav.ejs") %></nav>
 
@@ -17,13 +16,12 @@
     <p>Mood: <%= artwork.mood %></p>
 
     <p>Songs that match this mood:</p>
-    
-    <hr>
 
     <% songs.slice(0, 5).forEach(function(song) { %>
         <pr><%= song.name %> by <%= song.artist.name %></pr><br>
     <% }); %>
 
+    <hr>
     <%- include("partials/footer.ejs")%>
 </body>
 
