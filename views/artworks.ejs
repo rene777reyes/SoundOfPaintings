@@ -7,23 +7,24 @@
 </head>
 
 <body>
-    <%- include("partials/nav.ejs")%>
-    <h1>Browse Artworks</h1>
+    <header><h1>Browse Artworks</h1></header>
 
     <nav><%- include("partials/nav.ejs") %></nav>
 
     <div id="artwork">
         <% artworks.forEach(art=> { %>
-            <br><img src="<%= art.imageUrl %>" alt="<%= art.title %>" width="200" />
-            
-            <h2><%= art.title %> by <%= art.artist %></h2>
+            <div>
+                <br><img src="<%= art.imageUrl %>" alt="<%= art.title %>" width="200" />
+                
+                <h2><%= art.title %> by <%= art.artist %></h2>
 
-            <a href="/artwork/<%= art.artworkId %>">View Mood and Songs</a>
-
-            <hr>
+                <button class="artLinks"><a href="/artwork/<%= art.artworkId %>">View Mood and Songs</a></button>
+                
+                <hr>
+            </div>
         <% }) %>
     </div>
-
+    <hr>
     <%- include("partials/footer.ejs")%>
 </body>
 
