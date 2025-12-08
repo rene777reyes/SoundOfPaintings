@@ -22,6 +22,14 @@
         by <%= artworksMatched[i].creators?.[0]?.description || "Unknown Artist" %><br>
         <img id="painting" src="<%=artworksMatched[i].images.web.url%>" alt="painting"> <br>
         <%- artworksMatched[i].description %>
+        <br>
+        <button class="btn btn-outline-dark"
+            data-artist="<%= artworksMatched[i].creators?.[0]?.description || 'Unknown Artist' %>"
+            data-title="<%= artworksMatched[i].title %>"
+            data-image-url="<%= artworksMatched[i].images.web.url %>">
+            ❤️ Add to Favorites
+        </button>
+
         <hr>
     <% } %>
     <%- include("partials/footer.ejs")%>
