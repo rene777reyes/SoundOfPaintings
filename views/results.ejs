@@ -18,11 +18,7 @@
                     <input type="hidden" name="artist" value="<%= song.artist.name %>">
                     <button type="submit" class="song-btn">Play</button>
                 </form>
-                <form action="/favorites/songs" method="POST" style="display:inline;">
-                    <input type="hidden" name="track" value="<%= song.name %>">
-                    <input type="hidden" name="artist" value="<%= song.artist.name %>">
-                    <button type="submit" class="song-btn">❤️</button>
-                </form>
+                <button class="song-btn" onclick="likeSong('<%= song.name %>', '<%= song.artist.name %>', this)">❤️</button>
                 <br>
             <% } %>
         <% }); %>
@@ -53,5 +49,6 @@
     <% } %>
     <%- include("partials/footer.ejs")%>
     <hr>
+    <script src="/js/script.js"></script>
 </body>
 </html>
