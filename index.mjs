@@ -162,11 +162,12 @@ app.post("/addToFavs", async (req, res) => {
     const artist = req.body.artist || "Unknown Artist";
     const title = req.body.title;
     const image_url = req.body.image_url;
+    const userId = req.session.userId;
 
     let sql = `INSERT INTO favorites
-                (artist, title, image_url)
-                VALUES (?, ?, ?)`;
-    let sqlParams = [artist, title, image_url];
+                (artist, title, image_url, userId)
+                VALUES (?, ?, ?, ?)`;
+    let sqlParams = [artist, title, image_url, userId];
     const[rows] = await pool.query(sql, sqlParams);
     res.json({status: "ok"})
 });
@@ -207,13 +208,13 @@ app.get('/admin', isAuthenticated, isAdmin, async (req, res) => {
 // display favorited items
 app.get('/favorites', isAuthenticated, async (req, res) => {
 
-   const userId = req.params.id;
+   const userId = req.session.userId;
 
    try {
 
-     let sql = `SELECT artist, title, image_url, mood
-                FROM artworks
-                NATURAL JOIN favorites  
+     let sql = `SELECT artist, image_url, title
+                FROM favorites
+                NATURAL JOIN users 
                 WHERE userId = ?`
                 
     let params = [userId]

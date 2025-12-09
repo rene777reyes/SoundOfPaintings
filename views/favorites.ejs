@@ -2,11 +2,10 @@
 <html lang="en">
 <head>
     <%- include("partials/head.ejs")%>
-    <title> Favorites</title>
-    <title>Document</title>
+    <title>Favorites</title>
 </head>
 <body class="text-center">
-    <header><h1> Favorites</h1></header>
+    <header><h1>Favorites</h1></header>
     <%- include("partials/nav.ejs")%>
     
     <!-- Checks if the retrieved object from the routes is the error result -->
@@ -17,15 +16,15 @@
         <% for (fav of favorites) { %>
             <div>
                 <br>
-                <img src="<%= fav.imageUrl %>" alt="<%= fav.title %>" width = "200">
+                <img src="<%= fav.image_url %>" alt="<%= fav.title %>" width = "200">
 
                 <h2><%= fav.title %> by <%= fav.artist %></h2>
-                <h3>Mood: <%= fav.mood %></h3>
                 
             </div>
         <% } %>
     <% } %>
 
+    <hr>
     <%- include("partials/footer.ejs")%>
     
 </body>
