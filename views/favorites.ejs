@@ -9,18 +9,43 @@
     <%- include("partials/nav.ejs")%>
     
     <!-- Checks if the retrieved object from the routes is the error result -->
-     <!-- populates the page with a message if thats the case, the favorites otherwise -->
-    <% if(!favorites){ %>
+    <!-- populates the page with a message if thats the case, the favorites otherwise -->
+    <% if (favorites === " ") { %>
         <h2>No Favorites Yet! Go Find Some Stuff You Like!</h2>
     <% } else { %>
-        <% for (fav of favorites) { %>
-            <div>
-                <br>
-                <img src="<%= fav.image_url %>" alt="<%= fav.title %>" width = "400">
+        <h2>Favorite Artworks</h2>
+        <% if (favorites && favorites.length > 0) { %>
+            <% for (fav of favorites) { %>
+                <div>
+                    <br>
+                    <img src="<%= fav.image_url %>" alt="<%= fav.title %>" width="200">
 
-                <h2><%= fav.title %> by <%= fav.artist %></h2>
-                
-            </div>
+                    <h2><%= fav.title %> by <%= fav.artist %></h2>
+
+                    <form action="/favorites/artworks/remove" method="POST" style="margin-top: 0.5rem;">
+                        <input type="hidden" name="favoriteId" value="<%= fav.favoriteId %>">
+                        <button type="submit">💔 Unlike</button>
+                    </form>
+                </div>
+            <% } %>
+        <% } else { %>
+            <p>No favorite artworks yet.</p>
+        <% } %>
+
+        <hr>
+        <h2>Favorite Songs</h2>
+        <% if (songFavorites && songFavorites.length > 0) { %>
+            <% for (song of songFavorites) { %>
+                <div>
+                    <p><%= song.title %> by <%= song.artist %></p>
+                    <form action="/favorites/songs/remove" method="POST" style="display:inline;">
+                        <input type="hidden" name="songId" value="<%= song.songId %>">
+                        <button type="submit">💔</button>
+                    </form>
+                </div>
+            <% } %>
+        <% } else { %>
+            <p>No favorite songs yet.</p>
         <% } %>
     <% } %>
 
