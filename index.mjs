@@ -203,19 +203,25 @@ app.get('/admin', isAuthenticated, isAdmin, async (req, res) => {
     });
 });
 
-// only logged in users can go into the favorites tab
+// only logged in users can go into the favorites tab and 
+// display favorited items
 app.get('/favorites', isAuthenticated, async (req, res) => {
 
-    const userId = req.params.id;
+   const userId = req.params.id;
 
-    let sql = `SELECT artist, title, image_url, moods
-                FROM artists
-                NATURAL JOIN favorites 
+   try {
+
+     let sql = `SELECT artist, title, image_url, mood
+                FROM artworks
+                NATURAL JOIN favorites  
                 WHERE userId = ?`
-
-    let sqlParams = userId;
-    const[favs] = await pool.execute(sql, sqlParams);
+                
+    let params = [userId]
+    const[favs] = await pool.execute(sql, params);
     res.render('favorites', { username: req.session.username , favorites: favs });
+   } catch (err) {
+    res.render('favorites', {username: req.session.username, favorites: " "});
+   }
 });
 
 
