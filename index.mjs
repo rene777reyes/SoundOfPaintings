@@ -35,10 +35,10 @@ app.use((req, res, next) => {
 
 //setting up database connection pool
 const pool = mysql.createPool({
-    host: "qn66usrj1lwdk1cc.cbetxkdyhwsb.us-east-1.rds.amazonaws.com",
-    user: "wio9z639w46xw6q8",
-    password: "kxmxh2ebd9qx2b30",
-    database: "f3orc0h59yrjbdbz",
+    host: process.env.HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DATABASE_NAME,
     connectionLimit: 10,
     waitForConnections: true
 });
@@ -61,7 +61,7 @@ function isAdmin(req, res, next) {
 
 //Paintings API is working 
 export const getArtworks = async (keyword, skip, limit) => {
-    const url = "https://openaccess-api.clevelandart.org/api/artworks";
+    const url = process.env.ARTWORKS_API;
     const params = {
         q: keyword,
         skip: skip,
