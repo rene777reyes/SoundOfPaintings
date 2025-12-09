@@ -1,28 +1,81 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <%-include("partials/head.ejs")%>
+    <%- include("partials/head.ejs") %>
     <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-<nav>
-    <% if (session && session.userId) { %>
 
-        <a href="/">Home</a>
-        <a href="/favorites">Favorites</a>
+<nav class="navbar navbar-expand-lg bg-white border-bottom shadow-sm py-2">
+  <div class="container-fluid">
 
-        <% if (session.role === 'admin')
-         { %>
-            <a href="/admin">Admin</a>
+    <div class="d-flex align-items-center">
+      <div>
+        <div style="font-weight:600; font-size:1.1rem;">
+          Admin Dashboard
+        </div>
+        <div style="font-size:0.8rem; color:#888;">
+          Welcome to Sound of Paintings
+        </div>
+      </div>
+    </div>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+            data-bs-target="#adminNavbarNav" aria-controls="adminNavbarNav"
+            aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse justify-content-end" id="adminNavbarNav">
+      <ul class="navbar-nav align-items-center">
+
+        <li class="nav-item mx-1">
+          <a class="nav-link" href="/artworks">Browse</a>
+        </li>
+
+        <li class="nav-item mx-1">
+          <a class="nav-link" href="/">Search</a>
+        </li>
+
+        <li class="nav-item mx-1">
+          <a class="nav-link" href="/favorites">Favorites</a>
+        </li>
+
+        <% if (session && session.role === 'admin') { %>
+          <li class="nav-item mx-1">
+            <a class="nav-link fw-bold" href="/admin">Admin</a>
+          </li>
         <% } %>
 
-        <a href="/logout">Logout</a>
+        <% if (!session || !session.userId) { %>
+          <li class="nav-item mx-1"><a class="nav-link" href="/login">Login</a></li>
+          <li class="nav-item mx-1"><a class="nav-link" href="/signup">Signup</a></li>
+        <% } else { %>
+          <li class="nav-item mx-1"><a class="nav-link" href="/logout">Logout</a></li>
+        <% } %>
 
-    <% } else 
-    { %>
-        <a href="/login">Login</a>
-        <a href="/signup">Sign Up</a>
-    <% } %>
+        <li class="nav-item mx-2"><span class="nav-link"></span></li>
+
+        <li class="nav-item d-flex align-items-center mx-1">
+          <% if (session && session.profileImage) { %>
+            <img src="<%= session.profileImage %>"
+                 alt="Profile picture"
+                 style="width:40px;height:40px;border-radius:50%;
+                        object-fit:cover;margin-right:8px;">
+          <% } else { %>
+            <div style="width:40px;height:40px;border-radius:50%;background:#ddd;margin-right:8px;"></div>
+          <% } %>
+
+          <span style="font-size:0.9rem;">
+            Hello <%= username || (session && session.username) || 'Admin' %>
+          </span>
+        </li>
+
+      </ul>
+    </div>
+
+  </div>
 </nav>
 
 <h1>Admin Dashboard</h1>
@@ -31,8 +84,7 @@
 
 <h2>Search Users</h2>
 
-<form action="/admin" method="GET">
-
+<form action="/admin" method="GET" class="search-form">
     <input type="text" name="search" placeholder="Search by email or username">
 
     <select name="role">
@@ -40,46 +92,60 @@
         <option value="user">Users</option>
         <option value="admin">Admins</option>
     </select>
-    <button type="submit">Search</button>
 
+    <button type="submit">Search</button>
 </form>
 
 <h2>Current Users</h2>
 
 <% users.forEach(user => { %>
-    <div>
-        <p>ID: <%= user.userId %></p>
-        <p>Email: <%= user.email %></p>
-        <p>Username: <%= user.username %></p>
-        <p>Role: <%= user.role %></p>
+    <div class="user-card">
 
-        <% if (session && user.userId !== session.userId) { %>
+        <img class="user-pfp" 
+             src="<%= user.profileImage ? user.profileImage : '/images/default-pfp.png' %>" 
+             alt="Profile">
 
-            <form action="/admin/users/<%= user.userId %>/delete" method="POST"
-                  onsubmit="return confirm('Delete this user?');">
-                <button type="submit">Delete User</button>
-            </form>
+        <div class="user-info">
+            <p>ID: <%= user.userId %></p>
+            <p>Email: <%= user.email %></p>
+            <p>Username: <%= user.username %></p>
+            <p>Role: 
+                <%= user.role %> 
+                <span class="role-badge"><%= user.role.toUpperCase() %></span>
+            </p>
 
-            <% if (user.role !== 'admin') 
-            { %>
-                <form action="/admin/makeadmin" method="POST"
-                      onsubmit="return confirm('Make this user an admin?');">
-
-                    <input type="hidden" name="userId" value="<%= user.userId %>">
-                    <button type="submit">Make Admin</button>
+            <% if (session && user.userId !== session.userId) { %>
+                <form action="/admin/users/<%= user.userId %>/delete" method="POST"
+                      onsubmit="return confirm('Delete this user?');">
+                    <button type="submit" class="delete-btn">Delete User</button>
                 </form>
             <% } else { %>
-                <form action="/admin/removeadmin" method="POST"
-
-                      onsubmit="return confirm('Remove this user as admin?');">
-                    <input type="hidden" name="userId" value="<%= user.userId %>">
-                    <button type="submit">Remove Admin</button>
-                </form>
+                <p class="you-indicator">(You)</p>
             <% } %>
+        </div>
 
-        <% } else { %>
-            <p>(You)</p>
-        <% } %>
+        <div class="edit-user-box">
+            <h3>Edit User</h3>
+
+            <form action="/admin/users/<%= user.userId %>/update" method="POST" enctype="multipart/form-data">
+                <label>Email:</label>
+                <input type="email" name="email" value="<%= user.email %>" required>
+
+                <label>Username:</label>
+                <input type="text" name="username" value="<%= user.username %>" required>
+
+                <label>Role:</label>
+                <select name="role">
+                    <option value="user" <%= user.role === 'user' ? 'selected' : '' %>>User</option>
+                    <option value="admin" <%= user.role === 'admin' ? 'selected' : '' %>>Admin</option>
+                </select>
+
+                <label>Profile Picture:</label>
+                <input type="file" name="avatar" accept="image/*">
+
+                <button type="submit">Save Changes</button>
+            </form>
+        </div>
 
     </div>
     <hr>
@@ -87,6 +153,7 @@
 
 </body>
 </html>
+
 
 
 

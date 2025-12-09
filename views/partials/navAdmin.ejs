@@ -1,0 +1,84 @@
+<nav class="navbar navbar-expand-lg bg-white border-bottom shadow-sm py-2">
+  <div class="container-fluid">
+
+    <div class="d-flex align-items-center">
+
+      <div>
+        <div style="font-weight:600; font-size:1.1rem;">
+         Admin Dashboard
+        </div>
+        <div style="font-size:0.8rem; color:#888;">
+          Welcome to Sound of Paintings
+        </div>
+      </div>
+    </div>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+            data-bs-target="#adminNavbarNav" aria-controls="adminNavbarNav"
+            aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-end" id="adminNavbarNav">
+      <ul class="navbar-nav align-items-center">
+
+        <li class="nav-item mx-1">
+          <a class="nav-link" href="/artworks">Browse</a>
+        </li>
+
+        <li class="nav-item mx-1">
+          <a class="nav-link" href="/">Search</a>
+        </li>
+
+        <li class="nav-item mx-1">
+          <a class="nav-link" href="/favorites">Favorites</a>
+        </li>
+
+        <% if (session && session.role === 'admin') { %>
+          <li class="nav-item mx-1">
+            <a class="nav-link fw-bold" href="/admin">Admin</a>
+          </li>
+        <% } %>
+
+        <% if (!session || !session.userId) { %>
+          <!-- show Login / Signup -->
+          <li class="nav-item mx-1">
+            <a class="nav-link" href="/login">Login</a>
+          </li>
+          <li class="nav-item mx-1">
+            <a class="nav-link" href="/signup">Signup</a>
+          </li>
+        <% } else { %>
+          <!--  show Logout -->
+          <li class="nav-item mx-1">
+            <a class="nav-link" href="/logout">Logout</a>
+          </li>
+        <% } %>
+
+        <!-- users name and pfp-->
+        <li class="nav-item mx-2">
+          <span class="nav-link" style="cursor:pointer;"></span>
+        </li>
+
+        <li class="nav-item d-flex align-items-center mx-1">
+          <% if (session && session.profileImage) { %>
+            <img src="<%= session.profileImage %>"
+                 alt="Profile picture"
+                 style="width:40px;height:40px;border-radius:50%;
+                        object-fit:cover;margin-right:8px;">
+          <% } else { %>
+            <div style="
+              width:40px;height:40px;border-radius:50%;
+              background:#ddd; margin-right:8px;">
+            </div>
+          <% } %>
+
+          <span style="font-size:0.9rem;">
+            Hello <%= username || (session && session.username) || 'Admin' %>
+          </span>
+        </li>
+
+      </ul>
+    </div>
+
+  </div>
+</nav>

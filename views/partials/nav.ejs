@@ -1,29 +1,61 @@
 <nav class="navbar navbar-expand-lg bg-dark">
-        <a class="navbar-brand" href="#"></a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav w-100 justify-content-evenly">
+    <a class="navbar-brand" href="#"></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+        
+        <ul class="navbar-nav w-100 justify-content-evenly">
+            <li class="nav-item border border-2 border-primary bg-light rounded-pill">
+                <a class="nav-link" href="/artworks">Browse</a>
+            </li>
+            
+            <li class="nav-item border border-2 border-primary bg-light rounded-pill">
+                <a class="nav-link" aria-current="page" href="/">Search</a>
+            </li>
+            
+            <li class="nav-item border border-2 border-primary bg-light rounded-pill">
+                <a class="nav-link" href="/favorites">Favorites</a>
+            </li>
+            <% if (session && session.role === 'admin') { %>
                 <li class="nav-item border border-2 border-primary bg-light rounded-pill">
-                    <a class="nav-link" href="/artworks">Browse</a>
+                    <a class="nav-link" href="/admin">Admin</a>
                 </li>
-                <li class="nav-item border border border-2 border-primary bg-light rounded-pill">
-                    <a class="nav-link" aria-current="page" href="/">Search</a>
-                </li>
-                <li class="nav-item border border border-2 border-primary bg-light rounded-pill">
-                    <a class="nav-link" href="/favorites">Favorites</a>
-                </li>
-                <li class="nav-item bg-light border border-2 border-primary rounded-pill">
-                    <a class="nav-link" href="/login">Login</a>
-                </li>
-                <li class="nav-item bg-light border border-2 border-primary rounded-pill">
-                    <a class="nav-link" href="/signup">Signup</a>
-                </li>
-                <li class="nav-item bg-light border border-2 border-primary rounded-pill">
-                    <a class="nav-link" href="/logout">Logout</a>
-                </li>
-            </ul>
-        </div>
+            <% } %>
+            
+            <li class="nav-item bg-light border border-2 border-primary rounded-pill">
+                <a class="nav-link" href="/login">Login</a>
+            </li>
+            
+            <li class="nav-item bg-light border border-2 border-primary rounded-pill">
+                <a class="nav-link" href="/signup">Signup</a>
+            </li>
+            
+            <li class="nav-item bg-light border border-2 border-primary rounded-pill">
+                <a class="nav-link" href="/logout">Logout</a>
+            </li>
+        </ul>
+
+        <!-- where the user can upload an image for the pfp-->
+        <% if (session && session.userId) { %>
+            <div class="ms-4 d-flex align-items-center gap-2">
+
+                <% if (session.profileImage) { %>
+                    <img src="<%= session.profileImage %>"
+                        alt="pfp"
+                        class="rounded-circle border border-primary"
+                        style="width:45px; height:45px; object-fit:cover;">
+                <% } %>
+
+                <form action="/uploadPfp" method="POST" enctype="multipart/form-data" class="d-flex align-items-center">
+                    <input type="file" name="avatar" accept="image/*" class="form-control form-control-sm">
+                    <button class="btn btn-sm btn-outline-light ms-2">Upload</button>
+                </form>
+
+            </div>
+        <% } %>
+
+    </div>
 </nav>
