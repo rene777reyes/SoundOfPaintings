@@ -159,7 +159,7 @@ app.get('/artwork/:id', async (req, res) => {
 
 //add an artwork to favorites of user
 app.post("/addToFavs", async (req, res) => {
-    const artist = req.body.artist || "Unknown Artist";
+    const artist = req.body.artist;
     const title = req.body.title;
     const image_url = req.body.image_url;
     const userId = req.session.userId;
@@ -212,16 +212,15 @@ app.get('/favorites', isAuthenticated, async (req, res) => {
 
    try {
 
-     let sql = `SELECT artist, image_url, title
-                FROM favorites
-                NATURAL JOIN users 
-                WHERE userId = ?`
+     let sql = `SELECT f.artist, f.image_url, f.title
+                FROM favorites f
+                JOIN users u ON f.userId = u.userId
+                WHERE f.userId = ?`;
                 
-    let params = [userId]
-    const[favs] = await pool.execute(sql, params);
+    const[favs] = await pool.execute(sql, [userId]);
     res.render('favorites', { username: req.session.username , favorites: favs });
    } catch (err) {
-    res.render('favorites', {username: req.session.username, favorites: " "});
+    res.render('favorites', {username: req.session.username, favorites: null});
    }
 });
 

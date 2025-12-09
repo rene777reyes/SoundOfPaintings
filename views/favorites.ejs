@@ -5,18 +5,18 @@
     <title>Favorites</title>
 </head>
 <body class="text-center">
-    <header><h1>Favorites</h1></header>
+    <header><h1>Favorite Art Pieces</h1></header>
     <%- include("partials/nav.ejs")%>
     
     <!-- Checks if the retrieved object from the routes is the error result -->
      <!-- populates the page with a message if thats the case, the favorites otherwise -->
-    <% if(favorites === " "){ %>
+    <% if(!favorites){ %>
         <h2>No Favorites Yet! Go Find Some Stuff You Like!</h2>
     <% } else { %>
         <% for (fav of favorites) { %>
             <div>
                 <br>
-                <img src="<%= fav.image_url %>" alt="<%= fav.title %>" width = "200">
+                <img src="<%= fav.image_url %>" alt="<%= fav.title %>" width = "400">
 
                 <h2><%= fav.title %> by <%= fav.artist %></h2>
                 
