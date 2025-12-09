@@ -5,11 +5,10 @@
     <title>Results</title>
 </head>
 <body class="text-center">
+    <header><h1> Results for <%= mood %></h1></header>
     <%- include("partials/nav.ejs")%>
 
-    <h1> Results for <%= mood %></h1>
-
-    <hr><h4>SONGS </h4><hr>
+    <br><h4>SONGS </h4><hr>
     <% if (songs && songs.length > 0) { %>
         <% songs.slice(0, 5).forEach(function(song) { %>
             <% if (song && song.name && song.artist && song.artist.name) { %>
@@ -17,12 +16,12 @@
                 <form action="/playSong" method="GET" style="display:inline;">
                     <input type="hidden" name="track" value="<%= song.name %>">
                     <input type="hidden" name="artist" value="<%= song.artist.name %>">
-                    <button type="submit">Play</button>
+                    <button type="submit" class="song-btn">Play</button>
                 </form>
                 <form action="/favorites/songs" method="POST" style="display:inline;">
                     <input type="hidden" name="track" value="<%= song.name %>">
                     <input type="hidden" name="artist" value="<%= song.artist.name %>">
-                    <button type="submit">❤️</button>
+                    <button type="submit" class="song-btn">❤️</button>
                 </form>
                 <br>
             <% } %>

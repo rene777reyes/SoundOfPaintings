@@ -11,36 +11,42 @@
 
     <nav><%- include("partials/nav.ejs") %></nav>
 
-    <img src="<%= artwork.imageUrl %>" width="400" />
+    <main class="artwork-container">
+        <img src="<%= artwork.imageUrl %>" width="400" />
 
-    <p>Mood: <%= artwork.mood %></p>
+        <p>Mood: <%= artwork.mood %></p>
 
-    <p>Songs that match this mood:</p>
+        <p>Songs that match this mood:</p>
 
-    <hr>
+        <hr>
 
-    <% if (songInfo) { %>
-        <p> Currently playing: <%= songInfo.trackName%> by <%= songInfo.artistName%> </p> 
-        <audio autoplay controls playsinline>
-            <source src="<%= songInfo.previewUrl %>"
-              type="audio/mp4">
-        </audio>
-    <% } %>
+        <% if (songInfo) { %>
+            <p> Currently playing: <%= songInfo.trackName%> by <%= songInfo.artistName%> </p> 
+            <audio autoplay controls playsinline>
+                <source src="<%= songInfo.previewUrl %>" type="audio/mp4">
+            </audio>
+        <% } %>
 
-    <hr>
+        <hr>
 
-    <% songs.slice(0, 5).forEach(function(song) { %>
-        <pr><%= song.name %> by <%= song.artist.name %></pr>
-        <form action="/playSong" method="GET" style="display:inline;">
-            <input type="hidden" name="track" value="<%= song.name %>">
-            <input type="hidden" name="artist" value="<%= song.artist.name %>">
-            <button type="submit">Play</button>
-        </form>
-        <br>
-    <% }); %>
+        <% songs.slice(0, 5).forEach(function(song) { %>
+            <% if (song && song.name && song.artist && song.artist.name) { %>
+                <pr><%= song.name %> by <%= song.artist.name %></pr>
+                <form action="/playSong" method="GET" style="display:inline;">
+                    <input type="hidden" name="track" value="<%= song.name %>">
+                    <input type="hidden" name="artist" value="<%= song.artist.name %>">
+                    <button type="submit" class="song-btn">Play</button>
+                </form>
+                <form action="/favorites/songs" method="POST" style="display:inline;">
+                    <input type="hidden" name="track" value="<%= song.name %>">
+                    <input type="hidden" name="artist" value="<%= song.artist.name %>">
+                    <button type="submit" class="song-btn">❤️</button>
+                </form>
+                <br>
+            <% } %>
+        <% }); %>
+    </main>
 
     <hr>
     <%- include("partials/footer.ejs")%>
 </body>
-
-</html>

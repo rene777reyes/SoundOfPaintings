@@ -17,6 +17,12 @@
                 <br><img src="<%= art.imageUrl %>" alt="<%= art.title %>" width="200" />
                 
                 <h2><%= art.title %> by <%= art.artist %></h2>
+                <button class="btn btn-outline-dark"
+                    data-artist="<%= art.artist || 'Unknown Artist' %>"
+                    data-title="<%= art.title %>"
+                    data-image-url="<%= art.imageUrl %>">
+                    ❤️ Add to Favorites
+                </button>
 
                 <button class="artLinks"><a href="/artwork/<%= art.artworkId %>">View Mood and Songs</a></button>
                 
