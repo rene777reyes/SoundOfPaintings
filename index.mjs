@@ -7,7 +7,6 @@ dotenv.config();
 import fetch from 'node-fetch';
 import session from 'express-session';
 import bcrypt from 'bcrypt';
-import multer from 'multer';
 //import { getPlayableSongsByMood } from './public/js/script.js';
 
 //Middleware
@@ -205,23 +204,6 @@ app.get('/admin', isAuthenticated, isAdmin, async (req, res) => {
     });
 });
 
-//The usrs pfp
-//For the images/pfps
-const upload = multer({ dest: 'public/uploads/' });
-app.post('/uploadPfp', upload.single('avatar'), async (req, res) => {
-    const filePath = '/uploads/' + req.file.filename;
-
-    // save the file path to the user's profile
-    await pool.execute(
-        'UPDATE users SET profileImage = ? WHERE userId = ?',
-        [filePath, req.session.userId]
-    );
-
-    // update session
-    req.session.profileImage = filePath;
-
-    res.redirect('/');
-});
 
 // only logged in users can go into the favorites tab and 
 // display favorited items
@@ -278,34 +260,22 @@ app.post('/admin/removeadmin', isAuthenticated, isAdmin, async (req, res) => {
 });
 // update user info (email, username, role, optional profileImage)
 // I think this meets the "Users are able to update existing records. Must update at least three fields."
-app.post('/admin/users/:id/update', isAuthenticated, isAdmin, upload.single('avatar'), async (req, res) => {
+app.post('/admin/users/:id/update', isAuthenticated, isAdmin, async (req, res) => {
     const userId = req.params.id;
     const { email, username, role } = req.body;
 
-    let sql = 'UPDATE users SET email = ?, username = ?, role = ?';
-    const params = [email, username, role];
+    const sql = 'UPDATE users SET email = ?, username = ?, role = ? WHERE userId = ?';
+    const params = [email, username, role, userId];
 
-    if (req.file) {
-        const filePath = '/uploads/' + req.file.filename;
-        sql += ', profileImage = ?';
-        params.push(filePath);
-
-        if (req.session.userId == userId) {
-            req.session.profileImage = filePath;
-        }
-    }
-    sql += ' WHERE userId = ?';
-    params.push(userId);
-    try 
-    {
+    try {
         await pool.execute(sql, params);
         res.redirect('/admin');
-    } catch (err) 
-    {
+    } catch (err) {
         console.error('Error updating user:', err);
         res.status(500).send('Error updating user');
     }
 });
+
 
 
 //signup route

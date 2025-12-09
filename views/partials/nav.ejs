@@ -38,24 +38,5 @@
             </li>
         </ul>
 
-        <!-- where the user can upload an image for the pfp-->
-        <% if (session && session.userId) { %>
-            <div class="ms-4 d-flex align-items-center gap-2">
-
-                <% if (session.profileImage) { %>
-                    <img src="<%= session.profileImage %>"
-                        alt="pfp"
-                        class="rounded-circle border border-primary"
-                        style="width:45px; height:45px; object-fit:cover;">
-                <% } %>
-
-                <form action="/uploadPfp" method="POST" enctype="multipart/form-data" class="d-flex align-items-center">
-                    <input type="file" name="avatar" accept="image/*" class="form-control form-control-sm">
-                    <button class="btn btn-sm btn-outline-light ms-2">Upload</button>
-                </form>
-
-            </div>
-        <% } %>
-
     </div>
 </nav>

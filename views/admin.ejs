@@ -55,18 +55,10 @@
           <li class="nav-item mx-1"><a class="nav-link" href="/logout">Logout</a></li>
         <% } %>
 
-        <li class="nav-item mx-2"><span class="nav-link"></span></li>
-
-        <li class="nav-item d-flex align-items-center mx-1">
-          <% if (session && session.profileImage) { %>
-            <img src="<%= session.profileImage %>"
-                 alt="Profile picture"
-                 style="width:40px;height:40px;border-radius:50%;
-                        object-fit:cover;margin-right:8px;">
-          <% } else { %>
-            <div style="width:40px;height:40px;border-radius:50%;background:#ddd;margin-right:8px;"></div>
-          <% } %>
-
+        <li class="nav-item mx-2">
+          <span class="nav-link"></span>
+        </li>
+        <li class="nav-item mx-1">
           <span style="font-size:0.9rem;">
             Hello <%= username || (session && session.username) || 'Admin' %>
           </span>
@@ -82,35 +74,17 @@
 
 <p>Welcome, <%= username %>!</p>
 
-<h2>Search Users</h2>
-
-<form action="/admin" method="GET" class="search-form">
-    <input type="text" name="search" placeholder="Search by email or username">
-
-    <select name="role">
-        <option value="">All</option>
-        <option value="user">Users</option>
-        <option value="admin">Admins</option>
-    </select>
-
-    <button type="submit">Search</button>
-</form>
-
 <h2>Current Users</h2>
 
 <% users.forEach(user => { %>
     <div class="user-card">
 
-        <img class="user-pfp" 
-             src="<%= user.profileImage ? user.profileImage : '/images/default-pfp.png' %>" 
-             alt="Profile">
-
         <div class="user-info">
             <p>ID: <%= user.userId %></p>
             <p>Email: <%= user.email %></p>
             <p>Username: <%= user.username %></p>
-            <p>Role: 
-                <%= user.role %> 
+            <p>
+                Role: <%= user.role %> 
                 <span class="role-badge"><%= user.role.toUpperCase() %></span>
             </p>
 
@@ -127,7 +101,7 @@
         <div class="edit-user-box">
             <h3>Edit User</h3>
 
-            <form action="/admin/users/<%= user.userId %>/update" method="POST" enctype="multipart/form-data">
+            <form action="/admin/users/<%= user.userId %>/update" method="POST">
                 <label>Email:</label>
                 <input type="email" name="email" value="<%= user.email %>" required>
 
@@ -140,9 +114,6 @@
                     <option value="admin" <%= user.role === 'admin' ? 'selected' : '' %>>Admin</option>
                 </select>
 
-                <label>Profile Picture:</label>
-                <input type="file" name="avatar" accept="image/*">
-
                 <button type="submit">Save Changes</button>
             </form>
         </div>
@@ -153,8 +124,4 @@
 
 </body>
 </html>
-
-
-
-
 
