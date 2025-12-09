@@ -9,13 +9,28 @@
 
     <h1> Results for <%= mood %></h1>
 
-    <hr><h4>SONGS </h4><hr><%- output %> <hr>
+    <hr><h4>SONGS </h4><hr>
+    <% if (songs && songs.length > 0) { %>
+        <% songs.slice(0, 5).forEach(function(song) { %>
+            <% if (song && song.name && song.artist && song.artist.name) { %>
+                <pr><%= song.name %> by <%= song.artist.name %></pr>
+                <form action="/playSong" method="GET" style="display:inline;">
+                    <input type="hidden" name="track" value="<%= song.name %>">
+                    <input type="hidden" name="artist" value="<%= song.artist.name %>">
+                    <button type="submit">Play</button>
+                </form>
+                <br>
+            <% } %>
+        <% }); %>
+    <% } %>
+    <hr>
+
     <p> Currently playing: <%= songInfo.trackName%> by <%= songInfo.artistName%> </p> 
     <audio autoplay controls playsinline>
         <source src="<%= songInfo.previewUrl %>"
           type="audio/mp4">
     </audio>
-    <h4> WORKS OF ART</h4><hr>
+    <hr><h4> WORKS OF ART</h4><hr>
 
     <% for (i=0; i < artworksMatched.length; i++) { %>
         <h3><%= artworksMatched[i].title %> </h3> 

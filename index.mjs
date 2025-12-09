@@ -154,8 +154,24 @@ app.get('/artwork/:id', async (req, res) => {
     let mood = artwork.mood;
 
     let songs = await getSongsByMood(mood);
-    res.render('artwork-details', { artwork, songs });
+    let songInfo = null;
+    if (songs && songs.length > 0 && songs[0].name && songs[0].artist && songs[0].artist.name){
+        let firstSong = songs[0];
+        songInfo = await getOnePlayableSong(firstSong.name, firstSong.artist.name);
+    }
+    res.render('artwork-details', { artwork, songs, songInfo });
 });
+
+app.get('/playSong', async (req, res) => {
+    let track = req.query.track;
+    let artist = req.query.artist;
+    let songInfo = null;
+    if (track && artist){
+        songInfo = await getOnePlayableSong(track, artist);
+    }
+    res.render('song-details', { track, artist, songInfo });
+});
+
 
 //add an artwork to favorites of user
 app.post("/addToFavs", async (req, res) => {
@@ -323,7 +339,7 @@ app.get('/search', async (req, res) => {
 
     console.log(songInfo);
 
-    res.render('results.ejs', {artworksMatched, mood, output, songInfo});
+    res.render('results.ejs', {artworksMatched, mood, output, songInfo, songs});
  });
 
  //Login route

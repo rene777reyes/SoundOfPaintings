@@ -17,8 +17,26 @@
 
     <p>Songs that match this mood:</p>
 
+    <hr>
+
+    <% if (songInfo) { %>
+        <p> Currently playing: <%= songInfo.trackName%> by <%= songInfo.artistName%> </p> 
+        <audio autoplay controls playsinline>
+            <source src="<%= songInfo.previewUrl %>"
+              type="audio/mp4">
+        </audio>
+    <% } %>
+
+    <hr>
+
     <% songs.slice(0, 5).forEach(function(song) { %>
-        <pr><%= song.name %> by <%= song.artist.name %></pr><br>
+        <pr><%= song.name %> by <%= song.artist.name %></pr>
+        <form action="/playSong" method="GET" style="display:inline;">
+            <input type="hidden" name="track" value="<%= song.name %>">
+            <input type="hidden" name="artist" value="<%= song.artist.name %>">
+            <button type="submit">Play</button>
+        </form>
+        <br>
     <% }); %>
 
     <hr>
