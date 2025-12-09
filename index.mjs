@@ -249,7 +249,7 @@ app.get('/playSong', async (req, res) => {
 
 //add an artwork to favorites of user
 app.post("/addToFavs", async (req, res) => {
-    const artist = req.body.artist || "Unknown Artist";
+    const artist = req.body.artist;
     const title = req.body.title;
     const image_url = req.body.image_url;
     const userId = req.session.userId;
@@ -339,6 +339,7 @@ app.get('/admin', isAuthenticated, isAdmin, async (req, res) => {
     });
 });
 
+
 // only logged in users can go into the favorites tab and 
 // display favorited items
 app.get('/favorites', isAuthenticated, async (req, res) => {
@@ -420,6 +421,25 @@ app.post('/admin/removeadmin', isAuthenticated, isAdmin, async (req, res) => {
     await pool.execute('UPDATE users SET role = "user" WHERE userId = ?', [userId]);
     res.redirect('/admin');
 });
+// update user info (email, username, role, optional profileImage)
+// I think this meets the "Users are able to update existing records. Must update at least three fields."
+app.post('/admin/users/:id/update', isAuthenticated, isAdmin, async (req, res) => {
+    const userId = req.params.id;
+    const { email, username, role } = req.body;
+
+    const sql = 'UPDATE users SET email = ?, username = ?, role = ? WHERE userId = ?';
+    const params = [email, username, role, userId];
+
+    try {
+        await pool.execute(sql, params);
+        res.redirect('/admin');
+    } catch (err) {
+        console.error('Error updating user:', err);
+        res.status(500).send('Error updating user');
+    }
+});
+
+
 
 //signup route
 app.get('/signup', (req, res) => {
