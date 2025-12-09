@@ -19,6 +19,11 @@
                     <input type="hidden" name="artist" value="<%= song.artist.name %>">
                     <button type="submit">Play</button>
                 </form>
+                <form action="/favorites/songs" method="POST" style="display:inline;">
+                    <input type="hidden" name="track" value="<%= song.name %>">
+                    <input type="hidden" name="artist" value="<%= song.artist.name %>">
+                    <button type="submit">❤️</button>
+                </form>
                 <br>
             <% } %>
         <% }); %>

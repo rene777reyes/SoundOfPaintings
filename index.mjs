@@ -103,6 +103,80 @@ async function getSongsByMood(tag) {
     return data.tracks?.track || [];
 }
 
+async function findOrCreateSong(trackName, artistName) {
+    const songInfo = await getOnePlayableSong(trackName, artistName);
+    if (!songInfo || !songInfo.trackId) {
+        return null;
+    }
+
+    const externalId = songInfo.trackId;
+
+    const [existing] = await pool.execute(
+        'SELECT songId FROM songs WHERE externalId = ?',
+        [externalId]
+    );
+    if (existing.length > 0) {
+        return { songId: existing[0].songId, songInfo };
+    }
+
+    const [result] = await pool.execute(
+        'INSERT INTO songs (externalId, title, artist, previewUrl, albumCoverUrl, createdAt) VALUES (?, ?, ?, ?, ?, NOW())',
+        [externalId, songInfo.trackName, songInfo.artistName, songInfo.previewUrl, songInfo.artworkUrl100]
+    );
+
+    return { songId: result.insertId, songInfo };
+}
+
+async function ensureSongCollection(userId) {
+    const [rows] = await pool.execute(
+        'SELECT collectionId FROM collections WHERE userId = ? AND name = ?',
+        [userId, 'Favorite Songs']
+    );
+
+    if (rows.length > 0) {
+        return rows[0].collectionId;
+    }
+
+    const [result] = await pool.execute(
+        'INSERT INTO collections (userId, name) VALUES (?, ?)',
+        [userId, 'Favorite Songs']
+    );
+
+    return result.insertId;
+}
+
+app.post('/favorites/songs', isAuthenticated, async (req, res) => {
+    try {
+        const userId = req.session.userId;
+        const track = req.body.track;
+        const artist = req.body.artist;
+
+        if (!track || !artist) {
+            return res.status(400).json({ ok: false, message: 'Missing track or artist' });
+        }
+
+        const songRecord = await findOrCreateSong(track, artist);
+        if (!songRecord) {
+            return res.status(500).json({ ok: false, message: 'Unable to resolve song' });
+        }
+        const songId = songRecord.songId;
+
+        const collectionId = await ensureSongCollection(userId);
+
+        await pool.execute(
+            'INSERT INTO collectionItems (collectionId, songId, createdAt) VALUES (?, ?, NOW())',
+            [collectionId, songId]
+        );
+
+        return res.json({ ok: true });
+    } catch (err) {
+        console.error('Error adding song favorite:', err);
+        if (!res.headersSent) {
+            return res.status(500).json({ ok: false, message: 'Error adding song favorite' });
+        }
+    }
+});
+
 export async function getOnePlayableSong(trackName, artistName) {
     const query = `${trackName} ${artistName}`;
     const url = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&limit=1&media=music&entity=musicTrack`;
