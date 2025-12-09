@@ -31,6 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+
     const searchForm = document.querySelector('form[action="/search"]');
 
     if (searchForm) {
@@ -86,3 +87,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 });
+
+
+// liking Song button
+async function likeSong(track, artist, btn) {
+    const response = await fetch('/favorites/songs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ track, artist })
+    });
+
+    const data = await response.json();
+    if (data.ok) {
+        btn.innerText = "Saved";
+        btn.disabled = true;
+    }
+}
