@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include("partials/head.ejs") %>
+    <title>Song Player</title>
+</head>
+
+<body>
+    <header><h1><%= track %> by <%= artist %></h1></header>
+
+    <nav><%- include("partials/nav.ejs") %></nav>
+
+    <% if (songInfo && songInfo.previewUrl) { %>
+        <p> Currently playing: <%= songInfo.trackName %> by <%= songInfo.artistName %> </p> 
+        <audio autoplay controls playsinline>
+            <source src="<%= songInfo.previewUrl %>" type="audio/mp4">
+        </audio>
+    <% } else { %>
+        <p>No preview is available for this song.</p>
+    <% } %>
+
+    <hr>
+    <%- include("partials/footer.ejs")%>
+</body>
+
+</html>

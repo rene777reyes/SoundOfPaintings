@@ -23,7 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 
 //Creates a session variable to track if someone is logged in or not
 app.use(session({
-    secret: process.env.SESSION_SECRET,  
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false
 }));
@@ -103,6 +103,80 @@ async function getSongsByMood(tag) {
     return data.tracks?.track || [];
 }
 
+async function findOrCreateSong(trackName, artistName) {
+    const songInfo = await getOnePlayableSong(trackName, artistName);
+    if (!songInfo || !songInfo.trackId) {
+        return null;
+    }
+
+    const externalId = songInfo.trackId;
+
+    const [existing] = await pool.execute(
+        'SELECT songId FROM songs WHERE externalId = ?',
+        [externalId]
+    );
+    if (existing.length > 0) {
+        return { songId: existing[0].songId, songInfo };
+    }
+
+    const [result] = await pool.execute(
+        'INSERT INTO songs (externalId, title, artist, previewUrl, albumCoverUrl, createdAt) VALUES (?, ?, ?, ?, ?, NOW())',
+        [externalId, songInfo.trackName, songInfo.artistName, songInfo.previewUrl, songInfo.artworkUrl100]
+    );
+
+    return { songId: result.insertId, songInfo };
+}
+
+async function ensureSongCollection(userId) {
+    const [rows] = await pool.execute(
+        'SELECT collectionId FROM collections WHERE userId = ? AND name = ?',
+        [userId, 'Favorite Songs']
+    );
+
+    if (rows.length > 0) {
+        return rows[0].collectionId;
+    }
+
+    const [result] = await pool.execute(
+        'INSERT INTO collections (userId, name) VALUES (?, ?)',
+        [userId, 'Favorite Songs']
+    );
+
+    return result.insertId;
+}
+
+app.post('/favorites/songs', isAuthenticated, async (req, res) => {
+    try {
+        const userId = req.session.userId;
+        const track = req.body.track;
+        const artist = req.body.artist;
+
+        if (!track || !artist) {
+            return res.status(400).json({ ok: false, message: 'Missing track or artist' });
+        }
+
+        const songRecord = await findOrCreateSong(track, artist);
+        if (!songRecord) {
+            return res.status(500).json({ ok: false, message: 'Unable to resolve song' });
+        }
+        const songId = songRecord.songId;
+
+        const collectionId = await ensureSongCollection(userId);
+
+        await pool.execute(
+            'INSERT INTO collectionItems (collectionId, songId, createdAt) VALUES (?, ?, NOW())',
+            [collectionId, songId]
+        );
+
+        return res.json({ ok: true });
+    } catch (err) {
+        console.error('Error adding song favorite:', err);
+        if (!res.headersSent) {
+            return res.status(500).json({ ok: false, message: 'Error adding song favorite' });
+        }
+    }
+});
+
 export async function getOnePlayableSong(trackName, artistName) {
     const query = `${trackName} ${artistName}`;
     const url = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&limit=1&media=music&entity=musicTrack`;
@@ -149,17 +223,33 @@ app.get('/artwork/:id', async (req, res) => {
     let [rows] = await pool.execute(
         'SELECT * FROM artworks WHERE artworkId = ?', [req.params.id]
     );
-    
+
     let artwork = rows[0];
     let mood = artwork.mood;
 
     let songs = await getSongsByMood(mood);
-    res.render('artwork-details', { artwork, songs });
+    let songInfo = null;
+    if (songs && songs.length > 0 && songs[0].name && songs[0].artist && songs[0].artist.name) {
+        let firstSong = songs[0];
+        songInfo = await getOnePlayableSong(firstSong.name, firstSong.artist.name);
+    }
+    res.render('artwork-details', { artwork, songs, songInfo });
 });
+
+app.get('/playSong', async (req, res) => {
+    let track = req.query.track;
+    let artist = req.query.artist;
+    let songInfo = null;
+    if (track && artist) {
+        songInfo = await getOnePlayableSong(track, artist);
+    }
+    res.render('song-details', { track, artist, songInfo });
+});
+
 
 //add an artwork to favorites of user
 app.post("/addToFavs", async (req, res) => {
-    const artist = req.body.artist || "Unknown Artist";
+    const artist = req.body.artist;
     const title = req.body.title;
     const image_url = req.body.image_url;
     const userId = req.session.userId;
@@ -168,8 +258,53 @@ app.post("/addToFavs", async (req, res) => {
                 (artist, title, image_url, userId)
                 VALUES (?, ?, ?, ?)`;
     let sqlParams = [artist, title, image_url, userId];
-    const[rows] = await pool.query(sql, sqlParams);
-    res.json({status: "ok"})
+    const [rows] = await pool.query(sql, sqlParams);
+    res.json({ status: "ok" })
+});
+
+// remove an artwork from favorites
+app.post('/favorites/artworks/remove', isAuthenticated, async (req, res) => {
+    try {
+        const userId = req.session.userId;
+        const favoriteId = req.body.favoriteId;
+
+        if (!favoriteId) {
+            return res.redirect('/favorites');
+        }
+
+        await pool.execute(
+            'DELETE FROM favorites WHERE id = ? AND userId = ?',
+            [favoriteId, userId]
+        );
+
+        res.redirect('/favorites');
+    } catch (err) {
+        console.error('Error removing artwork favorite:', err);
+        res.redirect('/favorites');
+    }
+});
+
+app.post('/favorites/songs/remove', isAuthenticated, async (req, res) => {
+    try {
+        const userId = req.session.userId;
+        const songId = req.body.songId;
+
+        if (!songId) {
+            return res.redirect('/favorites');
+        }
+
+        await pool.execute(
+            `DELETE ci FROM collectionItems ci
+             JOIN collections c ON ci.collectionId = c.collectionId
+             WHERE c.userId = ? AND ci.songId = ?`,
+            [userId, songId]
+        );
+
+        res.redirect('/favorites');
+    } catch (err) {
+        console.error('Error removing song favorite:', err);
+        res.redirect('/favorites');
+    }
 });
 
 //routes
@@ -204,30 +339,59 @@ app.get('/admin', isAuthenticated, isAdmin, async (req, res) => {
     });
 });
 
+
 // only logged in users can go into the favorites tab and 
 // display favorited items
 app.get('/favorites', isAuthenticated, async (req, res) => {
 
-   const userId = req.session.userId;
+    const userId = req.session.userId;
 
-   try {
+    try {
 
-     let sql = `SELECT artist, image_url, title
-                FROM favorites
-                NATURAL JOIN users 
-                WHERE userId = ?`
-                
-    let params = [userId]
-    const[favs] = await pool.execute(sql, params);
-    res.render('favorites', { username: req.session.username , favorites: favs });
-   } catch (err) {
-    res.render('favorites', {username: req.session.username, favorites: " "});
-   }
+        // Paintings favorites
+        let sql = `SELECT favorites.id AS favoriteId,
+                  artist,
+                  image_url,
+                  title
+           FROM favorites
+           NATURAL JOIN users 
+           WHERE userId = ?`;
+
+
+        let params = [userId];
+        const [favs] = await pool.execute(sql, params);
+
+        // Song favorites from collections/collectionItems/songs
+        const [songFavorites] = await pool.execute(
+            `SELECT s.songId, s.title, s.artist
+        FROM collections c
+        JOIN collectionItems ci ON ci.collectionId = c.collectionId
+        JOIN songs s ON s.songId = ci.songId
+        WHERE c.userId = ?
+        GROUP BY s.songId, s.title, s.artist
+        ORDER BY MAX(ci.createdAt) DESC`,
+            [userId]
+        );
+
+        res.render('favorites', {
+            username: req.session.username,
+            favorites: favs,
+            songFavorites: songFavorites
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.render('favorites', {
+            username: req.session.username,
+            favorites: " ",
+            songFavorites: []
+        });
+    }
 });
 
 
 // Home only for logged in users
-app.get('/', isAuthenticated, (req, res) => {     
+app.get('/', isAuthenticated, (req, res) => {
     res.render('home', { username: req.session.username });
 });
 
@@ -257,6 +421,25 @@ app.post('/admin/removeadmin', isAuthenticated, isAdmin, async (req, res) => {
     await pool.execute('UPDATE users SET role = "user" WHERE userId = ?', [userId]);
     res.redirect('/admin');
 });
+// update user info (email, username, role, optional profileImage)
+// I think this meets the "Users are able to update existing records. Must update at least three fields."
+app.post('/admin/users/:id/update', isAuthenticated, isAdmin, async (req, res) => {
+    const userId = req.params.id;
+    const { email, username, role } = req.body;
+
+    const sql = 'UPDATE users SET email = ?, username = ?, role = ? WHERE userId = ?';
+    const params = [email, username, role, userId];
+
+    try {
+        await pool.execute(sql, params);
+        res.redirect('/admin');
+    } catch (err) {
+        console.error('Error updating user:', err);
+        res.status(500).send('Error updating user');
+    }
+});
+
+
 
 //signup route
 app.get('/signup', (req, res) => {
@@ -293,18 +476,18 @@ app.post('/signup', async (req, res) => {
 app.get('/search', async (req, res) => {
     let mood = req.query.mood;
     console.log(mood);
-    if (mood.includes(' ')){
+    if (mood.includes(' ')) {
         return res.render('home.ejs');
     }
     //calling paintings API
     const artworksMatched = await getArtworks(mood, 0, 10);
-    if (artworksMatched == null){
+    if (artworksMatched == null) {
         return res.render('home.ejs');
     }
 
     //calling song API
     let songs = await getSongsByMood(mood);
-    if (songs == null){
+    if (songs == null) {
         return res.render('home.ejs');
     }
 
@@ -317,18 +500,18 @@ app.get('/search', async (req, res) => {
 
     //only going to play the first song because iTunes blocks spamming
     let firstSong = songs[0];
-    if (!firstSong?.name || !firstSong.artist?.name){
+    if (!firstSong?.name || !firstSong.artist?.name) {
         return res.render('home.ejs');
     }
     let songInfo = await getOnePlayableSong(firstSong.name, firstSong.artist.name);
 
     console.log(songInfo);
 
-    res.render('results.ejs', {artworksMatched, mood, output, songInfo});
- });
+    res.render('results.ejs', { artworksMatched, mood, output, songInfo, songs });
+});
 
- //Login route
- app.get('/login', (req, res) => {
+//Login route
+app.get('/login', (req, res) => {
     res.render('login', { error: null });
 });
 
@@ -375,16 +558,16 @@ app.get('/logout', (req, res) => {
     });
 });
 //dbTest
-app.get("/dbTest", async(req, res) => {
+app.get("/dbTest", async (req, res) => {
     try {
-         const [rows] = await pool.query("SELECT CURDATE()");
-         res.send(rows);
-     } catch (err) {
-         console.error("Database error:", err);
-         res.status(500).send("Database error!");
-     }
- });
- 
- app.listen(3000, ()=>{
-     console.log("Express server running")
- })
+        const [rows] = await pool.query("SELECT CURDATE()");
+        res.send(rows);
+    } catch (err) {
+        console.error("Database error:", err);
+        res.status(500).send("Database error!");
+    }
+});
+
+app.listen(3000, () => {
+    console.log("Express server running")
+})
