@@ -30,4 +30,59 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     });
+
+    const searchForm = document.querySelector('form[action="/search"]');
+
+    if (searchForm) {
+        const moodInput = searchForm.querySelector('input[name="mood"]');
+
+        let errorBox = document.createElement("div");
+        errorBox.style.color = "darkred";
+        errorBox.style.marginTop = "0.5rem";
+        errorBox.style.fontWeight = "bold";
+        errorBox.style.display = "none";
+        searchForm.parentNode.insertBefore(errorBox, searchForm.nextSibling);
+
+        const showError = (msg) => {
+            errorBox.textContent = msg;
+            errorBox.style.display = "block";
+        };
+
+        const clearError = () => {
+            errorBox.textContent = "";
+            errorBox.style.display = "none";
+        };
+
+        searchForm.addEventListener("submit", (e) => {
+            if (!moodInput) {
+                return; 
+            }
+
+            clearError();
+
+            const mood = moodInput.value.trim();
+
+            if (!mood) {
+                e.preventDefault();
+                showError("Please enter a mood before searching.");
+                return;
+            }
+
+            const parts = mood.split(/\s+/);
+            if (parts.length > 1) {
+                e.preventDefault();
+                showError("Please enter exactly one word for your mood.");
+                return;
+            }
+
+        });
+
+        if (moodInput) {
+            moodInput.addEventListener("input", () => {
+                if (errorBox.textContent) {
+                    clearError();
+                }
+            });
+        }
+    }
 });

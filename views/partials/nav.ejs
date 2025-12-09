@@ -7,25 +7,28 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav w-100 justify-content-evenly">
-                <li class="nav-item border border-2 border-primary bg-light rounded-pill">
-                    <a class="nav-link" href="/admin">Admin</a>
-                </li>
-                <li class="nav-item border border-2 border-primary bg-light rounded-pill">
-                    <a class="nav-link" aria-current="page" href="/">Search</a>
-                </li>
                 <% if (session && session.userId) { %>
-                    <li class="nav-item border border-2 border-primary bg-light rounded-pill">
-                        <a class="nav-link" href="/favorites">Favorites</a>
-                    </li>
                     <% if (session.role === 'admin') { %>
                         <li class="nav-item border border-2 border-primary bg-light rounded-pill">
                             <a class="nav-link" href="/admin">Admin</a>
                         </li>
                     <% } %>
+                    <li class="nav-item border border-2 border-primary bg-light rounded-pill">
+                        <a class="nav-link" href="/artworks">Browse</a>
+                    </li>
+                    <li class="nav-item border border-2 border-primary bg-light rounded-pill">
+                        <a class="nav-link" aria-current="page" href="/">Search</a>
+                    </li>
+                    <li class="nav-item border border-2 border-primary bg-light rounded-pill">
+                        <a class="nav-link" href="/favorites">Favorites</a>
+                    </li>
                     <li class="nav-item bg-light border border-2 border-primary rounded-pill">
                         <a class="nav-link" href="/logout">Logout</a>
                     </li>
                 <% } else { %>
+                    <li class="nav-item border border-2 border-primary bg-light rounded-pill">
+                        <a class="nav-link" href="/artworks">Browse</a>
+                    </li>
                     <li class="nav-item bg-light border border-2 border-primary rounded-pill">
                         <a class="nav-link" href="/login">Login</a>
                     </li>
